@@ -1,0 +1,47 @@
+{
+  "sharedDir": "shared",
+  "dependenciesDir": "extern",
+  "info": {
+    "name": "Better Song List",
+    "id": "bsl",
+    "version": "0.1.0",
+    "url": "https://github.com/BSMGPink/BetterSongList",
+    "additionalData": {}
+  },
+  "dependencies": [
+    {
+      "id": "beatsaber-hook",
+      "versionRange": "^3.10.0",
+      "additionalData": {
+        "extraFiles": [
+          "src/inline-hook"
+        ]
+      }
+    },
+    {
+      "id": "codegen",
+      "versionRange": "^0.25.0",
+      "additionalData": {
+        "includeQmod": false
+      }
+    },
+    {
+      "id": "modloader",
+      "versionRange": "^1.2.3",
+      "additionalData": {}
+    },
+    {
+      "id": "custom-types",
+      "versionRange": "^0.15.18",
+      "additionalData": {
+        "includeQmod": false
+      }
+    },
+    {
+      "id": "paper",
+      "versionRange": "^1.2.7",
+      "additionalData": {}
+    }
+  ],
+  "additionalData": {}
+}
