@@ -15,6 +15,11 @@ struct Config {
     bool clearFiltersOnPlaylistSelect;
     bool modBasegameSearch;
     bool autoFilterUnowned;
+    bool extendSongScrollbar;
+    bool allowWipDelete;
+    bool showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun;
+    bool showMapJDInsteadOfOffset;
+    float accuracyMultiplier;
 };
 
 extern Config config;

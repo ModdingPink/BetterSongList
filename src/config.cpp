@@ -32,6 +32,11 @@ void SaveConfig() {
     Save(clearFiltersOnPlaylistSelect);
     Save(modBasegameSearch);
     Save(autoFilterUnowned);
+    Save(extendSongScrollbar);
+    Save(allowWipDelete);
+    Save(showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun);
+    Save(showMapJDInsteadOfOffset);
+    Save(accuracyMultiplier);
 
     get_config().Write();
     INFO("Saved Configuration!");
@@ -42,21 +47,28 @@ void SaveConfig() {
     if (identifier##_itr != doc.MemberEnd())                  \
         config.identifier = identifier##_itr->value.GetInt(); \
     else                                                      \
-        foundEverything = false;                              \
-    
+        foundEverything = false;
+
+#define GET_FLOAT(identifier)                                   \
+    auto identifier##_itr = doc.FindMember(#identifier);        \
+    if (identifier##_itr != doc.MemberEnd())                    \
+        config.identifier = identifier##_itr->value.GetFloat(); \
+    else                                                        \
+        foundEverything = false;
+
 #define GET_STRING(identifier)                                      \
     auto identifier##_itr = doc.FindMember(#identifier);            \
     if (identifier##_itr != doc.MemberEnd())                        \
         config.identifier = identifier##_itr->value.GetString();    \
     else                                                            \
-        foundEverything = false;                                    \
+        foundEverything = false;
 
 #define GET_BOOL(identifier)                                   \
     auto identifier##_itr = doc.FindMember(#identifier);       \
     if (identifier##_itr != doc.MemberEnd())                   \
         config.identifier = identifier##_itr->value.GetBool(); \
     else                                                       \
-        foundEverything = false;                               \
+        foundEverything = false;
 
 
 bool LoadConfig() {
@@ -75,6 +87,11 @@ bool LoadConfig() {
     GET_BOOL(clearFiltersOnPlaylistSelect);
     GET_BOOL(modBasegameSearch);
     GET_BOOL(autoFilterUnowned);
+    GET_BOOL(extendSongScrollbar);
+    GET_BOOL(allowWipDelete);
+    GET_BOOL(showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun);
+    GET_BOOL(showMapJDInsteadOfOffset);
+    GET_FLOAT(accuracyMultiplier);
 
     if (foundEverything)
         INFO("Loaded Configuration!");

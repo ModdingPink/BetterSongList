@@ -5,6 +5,10 @@
 #include "GlobalNamespace/CustomBeatmapLevelPack.hpp"
 #include "GlobalNamespace/CustomBeatmapLevelCollection.hpp"
 #include "GlobalNamespace/IBeatmapLevelCollection.hpp"
+#include "GlobalNamespace/BeatmapLevelsModel.hpp"
+
+#include "songloader/include/CustomTypes/SongLoader.hpp"
+#include "songloader/include/Utils/FindComponentsUtils.hpp"
 
 namespace BetterSongList::PlaylistUtils {
     static bool hasPlaylistLib = false;
@@ -33,16 +37,22 @@ namespace BetterSongList::PlaylistUtils {
 
     GlobalNamespace::IBeatmapLevelPack* GetPack(StringW packName) {
         if (!packName) return nullptr;
+        auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
         if (packName == "Custom Levels") {
-            //return SongLoader::CustomLevelsPack 
+            return songLoader->CustomLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
         } else if (packName == "WIP Levels") {
-            //return SongLoader::WIP levels
+            return songLoader->CustomWIPLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
         }
 
-        if (get_builtinPacks() != nullptr) {
-            // TODO: make this actually a thing that exists
-            //builtinPacks = songloader get all packs?
+        if (get_builtinPacks() == nullptr) {
+            auto levelsModel = RuntimeSongLoader::FindComponentsUtils::GetBeatmapLevelsModel();
+            auto collection = levelsModel->get_allLoadedBeatmapLevelWithoutCustomLevelPackCollection();
+            auto packs = collection->get_beatmapLevelPacks();
             builtinPacks = Dictionary<StringW, GlobalNamespace::IBeatmapLevelPack*>::New_ctor();
+
+            for (auto p : packs) {
+                builtinPacks->Add(p->get_shortPackName(), p);
+            }
         }
 
         GlobalNamespace::IBeatmapLevelPack* v;
@@ -50,6 +60,7 @@ namespace BetterSongList::PlaylistUtils {
             return v;
         } else if (hasPlaylistLib) {
             /*
+            TODO: Playlist lib tie-in
             auto playlists = playlistlib.getallplaylists;
             for (auto p : playlists) {
                 if (p->get_packName() == packName) {
@@ -69,10 +80,7 @@ namespace BetterSongList::PlaylistUtils {
 
     ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection) {
         // TODO: idem
-        auto customBeatmapLevelPack = il2cpp_utils::try_cast<GlobalNamespace::CustomBeatmapLevelPack>(levelCollection);
-        if (customBeatmapLevelPack.has_value()) {
-            return customBeatmapLevelPack.value()->get_beatmapLevelCollection()->get_beatmapLevels();
-        }
-        return nullptr;
+        auto collection = levelCollection ? levelCollection->get_beatmapLevelCollection() : 0;
+        return collection ? collection->get_beatmapLevels() : ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>(il2cpp_array_size_t(0));
     }
 }

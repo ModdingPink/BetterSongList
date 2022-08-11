@@ -4,6 +4,7 @@
 #include "Patches/RestoreTableScroll.hpp"
 #include "Patches/RestoreLevelSelection.hpp"
 #include "Patches/HookLevelCollectionTableSet.hpp"
+#include "Patches/UI/ScrollEnhancement.hpp"
 #include "GlobalNamespace/LevelCollectionTableView.hpp"
 
 // from RestoreLevelSelection
@@ -13,8 +14,10 @@ MAKE_AUTO_HOOK_ORIG_MATCH(LevelCollectionTableView_SelectLevel, &GlobalNamespace
 }
 
 // from RestoreTableScroll
+// from UI/ScrollEnhancement
 MAKE_AUTO_HOOK_MATCH(LevelCollectionTableView_Init_0, static_cast<void (GlobalNamespace::LevelCollectionTableView::*)()>(&GlobalNamespace::LevelCollectionTableView::Init), void, GlobalNamespace::LevelCollectionTableView* self) {
     BetterSongList::Hooks::RestoreTableScroll::Prefix(self);
+    BetterSongList::Hooks::ScrollEnhancement::LevelCollectionTableView_Init_Prefix(self, self->isInitialized, self->tableView);
     LevelCollectionTableView_Init_0(self);
 }
 

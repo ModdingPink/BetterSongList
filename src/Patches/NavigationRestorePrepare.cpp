@@ -8,7 +8,7 @@ namespace BetterSongList::Hooks {
     GlobalNamespace::SelectLevelCategoryViewController::LevelCategory NavigationRestorePrepare::category = GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None;
     std::string NavigationRestorePrepare::level;
 
-    std::string_view NavigationRestorePrepare::get_collection() {
+    std::string NavigationRestorePrepare::get_collection() {
         auto v = levelPack;
         levelPack.clear();
         return v;
@@ -20,7 +20,7 @@ namespace BetterSongList::Hooks {
         return v;
     }
 
-    std::string_view NavigationRestorePrepare::get_level() {
+    std::string NavigationRestorePrepare::get_level() {
         auto v = level;
         level.clear();
         return v;

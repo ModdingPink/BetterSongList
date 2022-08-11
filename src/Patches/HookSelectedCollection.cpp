@@ -1,6 +1,7 @@
 #include "Patches/HookSelectedCollection.hpp"
 #include "config.hpp"
 
+#include "songloader/include/CustomTypes/SongLoader.hpp"
 namespace BetterSongList::Hooks {
     SafePtr<GlobalNamespace::IAnnotatedBeatmapLevelCollection> HookSelectedCollection::lastSelectedCollection;
 
@@ -17,8 +18,11 @@ namespace BetterSongList::Hooks {
             auto name = beatmapLevelCollection->get_collectionName();
             config.lastPack = name ? static_cast<std::string>(name) : "";
         }
+        auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
+        auto pack = songLoader->CustomLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
+
         // TODO: a bunch of filterui stuff
-        if (beatmapLevelCollection && config.clearFiltersOnPlaylistSelect && beatmapLevelCollection != (void*)0xa/* TODO: songloader.customlevelspack*/) {
+        if (beatmapLevelCollection && config.clearFiltersOnPlaylistSelect && beatmapLevelCollection != pack->i_IAnnotatedBeatmapLevelCollection()) {
             //FilterUI.SetSort(null, false, false);
 			//FilterUI.SetFilter(null, false, false);
         } else if (lastSelectedCollection) {

@@ -8,6 +8,8 @@
 #include "logging.hpp"
 #include "config.hpp"
 
+#include "songloader/include/CustomTypes/SongLoader.hpp"
+
 namespace BetterSongList::Hooks {
     void RestoreLevelSelection::LevelFilteringNavigationController_ShowPacksInSecondChildController_Prefix(StringW& levelPackIdToBeSelectedAfterPresent) {
         if (Il2CppString::IsNullOrEmpty(levelPackIdToBeSelectedAfterPresent)) {
@@ -45,8 +47,8 @@ namespace BetterSongList::Hooks {
 
     bool RestoreLevelSelection::LevelPackDetailViewController_RefreshAvailabilityAsync_Prefix(GlobalNamespace::LevelPackDetailViewController* self, GlobalNamespace::IBeatmapLevelPack*& pack) {
         if (!pack) {
-            // TODO: get custom levels pack from songloader
-            // pack = songcore.customlevelspack
+            auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
+            pack = songLoader->CustomLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
         }
 
         if (!pack) {

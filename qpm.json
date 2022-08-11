@@ -6,7 +6,9 @@
     "id": "bsl",
     "version": "0.1.0",
     "url": "https://github.com/BSMGPink/BetterSongList",
-    "additionalData": {}
+    "additionalData": {
+      "overrideSoName": "libbsl.so"
+    }
   },
   "dependencies": [
     {
@@ -38,8 +40,38 @@
       }
     },
     {
+      "id": "bsml",
+      "versionRange": "^0.1.0",
+      "additionalData": {}
+    },
+    {
       "id": "paper",
       "versionRange": "^1.2.7",
+      "additionalData": {}
+    },
+    {
+      "id": "sdc-wrapper",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "songloader",
+      "versionRange": "^0.10.3",
+      "additionalData": {
+        "extraFiles": [
+          "include"
+        ],
+        "compileOptions": {
+          "includePaths": [
+            "include",
+            "shared"
+          ]
+        }
+      }
+    },
+    {
+      "id": "songdatacore",
+      "versionRange": "*",
       "additionalData": {}
     }
   ],
