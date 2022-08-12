@@ -4,6 +4,8 @@
 #include "UnityEngine/WaitForEndOfFrame.hpp"
 #include "GlobalNamespace/SharedCoroutineStarter.hpp"
 
+#include "UI/FilterUI.hpp"
+
 namespace BetterSongList::Hooks {
     void BottomUI::LevelCollectionNavigationController_DidActivate_Prefix(GlobalNamespace::LevelCollectionNavigationController* self, bool firstActivation) {
         auto starter = GlobalNamespace::SharedCoroutineStarter::get_instance();
@@ -23,8 +25,7 @@ namespace BetterSongList::Hooks {
 
     custom_types::Helpers::Coroutine BottomUI::InitDelayed(UnityEngine::Transform* t) {
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
-        // TODO: filterui stuff
-        // FilterUI.AttachTo(t.parent);
+        FilterUI::AttachTo(t->get_parent());
         co_return;
     }
 }

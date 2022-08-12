@@ -107,7 +107,6 @@ namespace BetterSongList {
             return;
         }
 
-        // TODO: delete path manually? idk, that's what the PC mod does
         deleteModal->Hide();
     }
 }

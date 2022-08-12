@@ -17,6 +17,9 @@
 #include "GlobalNamespace/AlphabetScrollInfo.hpp"
 #include "GlobalNamespace/AlphabetScrollInfo_Data.hpp"
 
+#include "UI/FilterUI.hpp"
+#include <cxxabi.h>
+
 namespace BetterSongList::Hooks {
     ISorter* HookLevelCollectionTableSet::sorter;
     IFilter* HookLevelCollectionTableSet::filter;
@@ -81,31 +84,49 @@ namespace BetterSongList::Hooks {
         memcpy(previewBeatmapLevels.begin(), out.data(), out.size());
 
         if (sorter ? sorter->get_isReady() : false) {
-            if ((sorter->type & SorterType::Custom) == SorterType::Custom) {
-                auto customSorter = reinterpret_cast<ISorterCustom*>(sorter);
-                customSorter->DoSort(previewBeatmapLevels, config.sortAscending);
-            } else if ((sorter->type & SorterType::Primitive) == SorterType::Primitive) {
-                auto primitiveSorter = reinterpret_cast<ISorterPrimitive*>(sorter);
+            // you say RED WTF IS GOING ON HERE
+            union {
+                ISorter* sorter;
+                ISorterCustom* customSorter;
+                ISorterPrimitive* primitiveSorter;
+            } castedSorter;
+            // this union just holds different types, but really it's 1 pointer, which is assigned here
+            castedSorter.sorter = sorter;
+
+            // this checks if the server is an ISorterCustom with rtti
+            if (sorter->as<ISorterCustom*>()) {
+                castedSorter.customSorter->DoSort(previewBeatmapLevels, config.sortAscending);
+            } 
+            // this checks if the server is an ISorterPrimitive with rtti
+            else if (sorter->as<ISorterPrimitive*>()) {
                 if (config.sortAscending) {
                     std::sort(previewBeatmapLevels.begin(), previewBeatmapLevels.end(), 
-                        [primitiveSorter](GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
+                        [primitiveSorter = castedSorter.primitiveSorter](GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
                             return primitiveSorter->GetValueFor(lhs).value_or(std::numeric_limits<float>::infinity()) <
                             primitiveSorter->GetValueFor(rhs).value_or(-std::numeric_limits<float>::infinity());
                     });
                 } else {
                     std::sort(previewBeatmapLevels.begin(), previewBeatmapLevels.end(), 
-                        [primitiveSorter](GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
+                        [primitiveSorter = castedSorter.primitiveSorter](GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
                             return primitiveSorter->GetValueFor(rhs).value_or(std::numeric_limits<float>::infinity()) <
                             primitiveSorter->GetValueFor(lhs).value_or(-std::numeric_limits<float>::infinity());
                     });
                 }
-            } else {
-                ERROR("Sorter was of type {:b} which is not a valid sorter type!", static_cast<int>(sorter->type));
+            } 
+            // if it was neither, print the type name
+            else {
+                ISorter& s = *sorter;
+                auto& ti = typeid(s);
+                int status;
+                auto realname = abi::__cxa_demangle(ti.name(), 0, 0, &status);
+                ERROR("Sorter was of type {} which is not a valid sorter type!", realname);
+                free(realname);
             }
         }
 
-        if (sorter && (sorter->type & SorterType::WithLegend) == SorterType::WithLegend) {
-            auto legendMap = reinterpret_cast<ISorterWithLegend*>(sorter)->BuildLegend(previewBeatmapLevels);
+        auto withLegend = sorter ? sorter->as<ISorterWithLegend*>() : nullptr;
+        if (withLegend) {
+            auto legendMap = withLegend->BuildLegend(previewBeatmapLevels);
             for (const auto& [key, value] : legendMap) {
                 customLegend.emplace_back(key, value);
             }
@@ -165,9 +186,12 @@ namespace BetterSongList::Hooks {
         if (PrepareStuffIfNecessary([](){Refresh(true);})) {
             DEBUG("Stuff isnt ready yet... Preparing it and then reloading list: Sorter {0}, Filter {1}", sorter ? sorter->get_isReady() : false, filter ? filter->get_isReady() : false);
         }
-
-        // TODO: filterui stuff
-        //XD.FunnyNull(FilterUI.persistentNuts._filterLoadingIndicator)?.gameObject.SetActive(false);
+        
+        auto instance = FilterUI::get_instance();
+        auto loadingIndicator = instance->filterLoadingIndicator;
+        if (loadingIndicator && loadingIndicator->m_CachedPtr.m_value) {
+            loadingIndicator->get_gameObject()->SetActive(false);
+        }
 
         if (asyncPreProcessed) {
             previewBeatmapLevels = asyncPreProcessed.ptr();

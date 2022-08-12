@@ -5,6 +5,7 @@
 #include "bsml/shared/BSML.hpp"
 #include "bsml/shared/BSML/Components/ClickableText.hpp"
 #include "bsml/shared/BSML/Components/ClickableImage.hpp"
+#include "bsml/shared/BSML/Components/ModalView.hpp"
 #include "UnityEngine/RectTransform.hpp"
 #include "HMUI/DropdownWithTableView.hpp"
 #include "TMPro/TextMeshProUGUI.hpp"
@@ -26,8 +27,9 @@ DECLARE_CLASS_CODEGEN(BetterSongList, FilterUI, Il2CppObject,
     DECLARE_INSTANCE_FIELD(TMPro::TextMeshProUGUI*, failTextLabel);
     DECLARE_INSTANCE_FIELD(bool, settingsWereOpened);
     DECLARE_INSTANCE_FIELD(BSML::ClickableText*, settingsButton);
+    DECLARE_INSTANCE_FIELD(BSML::ModalView*, incompatibilityModal);
 
-    DECLARE_INSTANCE_METHOD(void, UpdateDropDowns);
+    DECLARE_INSTANCE_METHOD(void, UpdateDropdowns);
     DECLARE_INSTANCE_METHOD(void, UpdateTransformerOptionsAndDropdowns);
     DECLARE_INSTANCE_METHOD(void, ToggleSortDirection);
     DECLARE_INSTANCE_METHOD(void, SelectRandom);
@@ -36,8 +38,9 @@ DECLARE_CLASS_CODEGEN(BetterSongList, FilterUI, Il2CppObject,
     DECLARE_INSTANCE_METHOD(void, PossiblyShowNextWarning);
     DECLARE_INSTANCE_METHOD(void, SettingsOpened);
     DECLARE_INSTANCE_METHOD(void, PostParse);
+    DECLARE_INSTANCE_METHOD(void, CloseWarningModal);
     
-    DECLARE_DEFAULT_CTOR();
+    DECLARE_CTOR(ctor);
     public:
 		static void UpdateVisibleTransformers();
         static FilterUI* get_instance();
@@ -48,7 +51,7 @@ DECLARE_CLASS_CODEGEN(BetterSongList, FilterUI, Il2CppObject,
 		static void Init();
 		static void AttachTo(UnityEngine::Transform* target);
 		static void HackDropdown(HMUI::DropdownWithTableView* dropdown);
-        void ShowErrorASAP(StringW text = nullptr);
+        void ShowErrorASAP(std::string_view text = "");
 
     private:
         static SafePtr<FilterUI> instance;

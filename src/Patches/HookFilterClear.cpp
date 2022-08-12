@@ -1,11 +1,11 @@
 #include "Patches/HookFilterClear.hpp"
 
 #include "GlobalNamespace/LevelFilterParams.hpp"
+#include "UI/FilterUI.hpp"
 
 namespace BetterSongList::Hooks {
     void HookFilterClear::LevelSearchViewController_ResetCurrentFilterParams_Prefix() {
-        //TODO: filterui stuff
-        //FilterUI.SetFilter(null, false, false);
+        FilterUI::SetFilter("", false, false);
     }
 
     void HookFilterClear::LevelSearchViewController_ResetCurrentFilterParams_Postfix(GlobalNamespace::LevelFilterParams* currentFilterParams) {

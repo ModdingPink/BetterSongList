@@ -20,6 +20,9 @@ struct Config {
     bool showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun;
     bool showMapJDInsteadOfOffset;
     float accuracyMultiplier;
+    bool allowPluginSortsAndFilters;
+    bool sortAsc;
+    std::string settingsSeenInVersion = "";
 };
 
 extern Config config;

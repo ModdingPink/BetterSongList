@@ -2,6 +2,8 @@
 #include "Patches/RestoreTableScroll.hpp"
 #include "config.hpp"
 
+#include "UI/FilterUI.hpp"
+
 namespace BetterSongList::Hooks {
     GlobalNamespace::SelectLevelCategoryViewController::LevelCategory HookSelectedCategory::lastSelectedCategory = GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None;
     
@@ -18,7 +20,8 @@ namespace BetterSongList::Hooks {
         config.lastCategory = lastSelectedCategory;
 
         RestoreTableScroll::ResetScroll();
-        // TODO: filterui stuff
-        //FilterUI.persistentNuts?.UpdateTransformerOptionsAndDropdowns();
+
+        auto instance = FilterUI::get_instance();
+        instance->UpdateTransformerOptionsAndDropdowns();
     }
 }

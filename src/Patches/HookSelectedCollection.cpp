@@ -2,6 +2,9 @@
 #include "config.hpp"
 
 #include "songloader/include/CustomTypes/SongLoader.hpp"
+
+#include "UI/FilterUI.hpp"
+
 namespace BetterSongList::Hooks {
     SafePtr<GlobalNamespace::IAnnotatedBeatmapLevelCollection> HookSelectedCollection::lastSelectedCollection;
 
@@ -21,17 +24,17 @@ namespace BetterSongList::Hooks {
         auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
         auto pack = songLoader->CustomLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
 
-        // TODO: a bunch of filterui stuff
+        auto instance = FilterUI::get_instance();
         if (beatmapLevelCollection && config.clearFiltersOnPlaylistSelect && beatmapLevelCollection != pack->i_IAnnotatedBeatmapLevelCollection()) {
-            //FilterUI.SetSort(null, false, false);
-			//FilterUI.SetFilter(null, false, false);
+            instance->SetSort("", false, false);
+            instance->SetFilter("", false, false);
         } else if (lastSelectedCollection) {
-            //FilterUI.SetSort(config.lastSort, false, false);
-			//FilterUI.SetFilter(config.lastFilter, false, false);
+            instance->SetSort(config.lastSort, false, false);
+            instance->SetFilter(config.lastFilter, false, false);
         }
 
         lastSelectedCollection.emplace(beatmapLevelCollection);
-        //FilterUI.persistentNuts?.UpdateTransformerOptionsAndDropdowns();
+        instance->UpdateTransformerOptionsAndDropdowns();
     }
 
     // HookLevelCollectionUnset

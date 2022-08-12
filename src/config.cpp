@@ -37,6 +37,9 @@ void SaveConfig() {
     Save(showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun);
     Save(showMapJDInsteadOfOffset);
     Save(accuracyMultiplier);
+    Save(allowPluginSortsAndFilters);
+    Save(sortAsc);
+    Save(settingsSeenInVersion);
 
     get_config().Write();
     INFO("Saved Configuration!");
@@ -92,6 +95,9 @@ bool LoadConfig() {
     GET_BOOL(showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun);
     GET_BOOL(showMapJDInsteadOfOffset);
     GET_FLOAT(accuracyMultiplier);
+    GET_BOOL(allowPluginSortsAndFilters);
+    GET_BOOL(sortAsc);
+    GET_STRING(settingsSeenInVersion);
 
     if (foundEverything)
         INFO("Loaded Configuration!");
