@@ -1,5 +1,6 @@
 #include "Patches/HookSelectedCollection.hpp"
 #include "config.hpp"
+#include "logging.hpp"
 
 #include "songloader/include/CustomTypes/SongLoader.hpp"
 
@@ -21,11 +22,15 @@ namespace BetterSongList::Hooks {
             auto name = beatmapLevelCollection->get_collectionName();
             config.lastPack = name ? static_cast<std::string>(name) : "";
         }
+
+        WARNING("AnnotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(): {0}", beatmapLevelCollection ? beatmapLevelCollection->get_collectionName() : "NULL");
         auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
-        auto pack = songLoader->CustomLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
+        auto customLevelspack = songLoader->CustomLevelsPack;
+        auto actualPack = customLevelspack ? customLevelspack->CustomLevelsPack : nullptr;
+        auto pack = actualPack ? actualPack->i_IBeatmapLevelPack()->i_IAnnotatedBeatmapLevelCollection() : nullptr;
 
         auto instance = FilterUI::get_instance();
-        if (beatmapLevelCollection && config.clearFiltersOnPlaylistSelect && beatmapLevelCollection != pack->i_IAnnotatedBeatmapLevelCollection()) {
+        if (beatmapLevelCollection && config.clearFiltersOnPlaylistSelect && beatmapLevelCollection != pack) {
             instance->SetSort("", false, false);
             instance->SetFilter("", false, false);
         } else if (lastSelectedCollection) {
@@ -35,6 +40,7 @@ namespace BetterSongList::Hooks {
 
         lastSelectedCollection.emplace(beatmapLevelCollection);
         instance->UpdateTransformerOptionsAndDropdowns();
+        DEBUG("EOF HandleDidSelectAnnotatedBeatmapLevelCollection:Prefix");
     }
 
     // HookLevelCollectionUnset

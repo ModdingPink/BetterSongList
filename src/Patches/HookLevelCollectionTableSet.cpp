@@ -19,6 +19,7 @@
 
 #include "UI/FilterUI.hpp"
 #include <cxxabi.h>
+#include <sstream>
 
 namespace BetterSongList::Hooks {
     ISorter* HookLevelCollectionTableSet::sorter;
@@ -28,7 +29,7 @@ namespace BetterSongList::Hooks {
     SafePtr<Array<GlobalNamespace::IPreviewBeatmapLevel*>> HookLevelCollectionTableSet::lastOutMapList;
     SafePtr<Array<GlobalNamespace::IPreviewBeatmapLevel*>> HookLevelCollectionTableSet::asyncPreProcessed;
     std::vector<HookLevelCollectionTableSet::CustomLegendPair> HookLevelCollectionTableSet::customLegend;
-    std::thread* HookLevelCollectionTableSet::sortingThread = nullptr;
+    bool HookLevelCollectionTableSet::prepareThreadCurrentlyRunning = false;
 
     ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> HookLevelCollectionTableSet::get_lastInMapList() {
         if (!lastInMapList) {
@@ -48,6 +49,8 @@ namespace BetterSongList::Hooks {
         if (!lastInMapList) {
             return;
         }
+
+        DEBUG("Refresh({}, {})", processAsync, clearAsyncResult);
 
         if (clearAsyncResult) {
             asyncPreProcessed.emplace(nullptr);
@@ -70,6 +73,10 @@ namespace BetterSongList::Hooks {
     void HookLevelCollectionTableSet::FilterWrapper(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& previewBeatmapLevels) {
         if (!(filter ? filter->get_isReady() : false) && !(sorter ? sorter->get_isReady() : false)) return;
 
+        std::stringstream threadId;
+        threadId << std::this_thread::get_id();
+        DEBUG("FilterWrapper({}) - thread {}", previewBeatmapLevels.size(), threadId.str());
+        
         std::vector<GlobalNamespace::IPreviewBeatmapLevel*> out;
         if (filter ? filter->get_isReady() : false) {
             // check every level if they match the current filter
@@ -94,11 +101,11 @@ namespace BetterSongList::Hooks {
             castedSorter.sorter = sorter;
 
             // this checks if the server is an ISorterCustom with rtti
-            if (sorter->as<ISorterCustom*>()) {
+            if (sorter && sorter->as<ISorterCustom*>()) {
                 castedSorter.customSorter->DoSort(previewBeatmapLevels, config.sortAscending);
             } 
             // this checks if the server is an ISorterPrimitive with rtti
-            else if (sorter->as<ISorterPrimitive*>()) {
+            else if (sorter && sorter->as<ISorterPrimitive*>()) {
                 if (config.sortAscending) {
                     std::sort(previewBeatmapLevels.begin(), previewBeatmapLevels.end(), 
                         [primitiveSorter = castedSorter.primitiveSorter](GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
@@ -114,13 +121,15 @@ namespace BetterSongList::Hooks {
                 }
             } 
             // if it was neither, print the type name
-            else {
+            else if (sorter) {
                 ISorter& s = *sorter;
                 auto& ti = typeid(s);
                 int status;
                 auto realname = abi::__cxa_demangle(ti.name(), 0, 0, &status);
                 ERROR("Sorter was of type {} which is not a valid sorter type!", realname);
                 free(realname);
+            } else {
+                DEBUG("Sorter was null!");
             }
         }
 
@@ -135,22 +144,30 @@ namespace BetterSongList::Hooks {
 
     bool HookLevelCollectionTableSet::PrepareStuffIfNecessary(std::function<void()> cb, bool cbOnAlreadyPrepared) {
         using namespace System::Threading::Tasks;
-        if (!(filter ? filter->get_isReady() : false) && !(sorter ? sorter->get_isReady() : false)) {
+        if ((filter && !filter->get_isReady()) || (sorter && !sorter->get_isReady())) {
             
-            if (sortingThread) {
-                auto thread = sortingThread;
-                sortingThread = nullptr;
-                delete thread;
+            auto instance = FilterUI::get_instance();
+            auto indicator = instance->filterLoadingIndicator;
+            if (indicator && indicator->m_CachedPtr.m_value) {
+                indicator->get_gameObject()->SetActive(true);
             }
 
-            sortingThread = new std::thread([cb]() {
-                if (sorter && !sorter->get_isReady()) sorter->Prepare(); 
-                if (filter && !filter->get_isReady()) filter->Prepare(); 
-                
-                sortingThread = nullptr;
-                if (cb) cb();
-            });
+            DEBUG("PrepareStuffIfNecessary()");
+            if (!prepareThreadCurrentlyRunning) {
+                prepareThreadCurrentlyRunning = true;
+                std::thread([cb]() {
+                    if (sorter && !sorter->get_isReady()) sorter->Prepare(); 
+                    if (filter && !filter->get_isReady()) filter->Prepare(); 
+
+                    DEBUG("Sorter / Filter prepared");
+
+                    prepareThreadCurrentlyRunning = false;
+                    if (cb) cb();
+                }).detach();
+            }
             return true;
+        } else {
+            INFO("Sorter & Filter were prepared!");
         }
 
         if (cbOnAlreadyPrepared && cb) cb();
@@ -158,17 +175,17 @@ namespace BetterSongList::Hooks {
     }
 
     void HookLevelCollectionTableSet::Prefix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& previewBeatmapLevels, HashSet<StringW>* favoriteLevelIds, bool& beatmapLevelsAreSorted) {
-        if (previewBeatmapLevels.convert() == lastInMapList.ptr()) {
+        DEBUG("LevelCollectionTableView.SetData() : Prefix");
+        if (lastInMapList && previewBeatmapLevels.convert() == lastInMapList.ptr()) {
+            DEBUG("LevelCollectionTableView.SetData() : Prefix -> levels = lastout because lastin == levels");
             previewBeatmapLevels = lastOutMapList.ptr();
             return;
         }
 
         if (HookSelectedCollection::get_lastSelectedCollection() && PlaylistUtils::get_hasPlaylistLib()) {
-            if (!PlaylistUtils::get_requiresListCast()) [[likely]] {
-                auto playlistArr = PlaylistUtils::GetLevelsForLevelCollection(HookSelectedCollection::get_lastSelectedCollection());
-                if (playlistArr) {
-                    previewBeatmapLevels = playlistArr;
-                }
+            auto playlistArr = PlaylistUtils::GetLevelsForLevelCollection(HookSelectedCollection::get_lastSelectedCollection());
+            if (playlistArr) {
+                previewBeatmapLevels = playlistArr;
             }
         }
 
@@ -179,8 +196,9 @@ namespace BetterSongList::Hooks {
             self->SetData((System::Collections::Generic::IReadOnlyList_1<GlobalNamespace::IPreviewBeatmapLevel*>*)data, favoriteLevelIds, isSorted);
         };
 
-        if (sorter && sorter->get_isReady()) {
+        if (!sorter || sorter->get_isReady()) {
             beatmapLevelsAreSorted = false;
+            DEBUG("We can Sort!");
         }
 
         if (PrepareStuffIfNecessary([](){Refresh(true);})) {
@@ -195,6 +213,7 @@ namespace BetterSongList::Hooks {
 
         if (asyncPreProcessed) {
             previewBeatmapLevels = asyncPreProcessed.ptr();
+			DEBUG("Used Async-Prefiltered");
             asyncPreProcessed.emplace(nullptr);
             return;
         }

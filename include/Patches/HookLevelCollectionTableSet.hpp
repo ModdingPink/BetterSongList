@@ -35,6 +35,6 @@ namespace BetterSongList::Hooks {
                 int value;
             };
             static std::vector<CustomLegendPair> customLegend;
-            static std::thread* sortingThread;
+            static bool prepareThreadCurrentlyRunning;
     };
 }

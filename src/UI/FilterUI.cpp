@@ -41,6 +41,7 @@ namespace BetterSongList {
     }
     
     void FilterUI::UpdateDropdowns() {
+        DEBUG("FilterUI::UpdateDropdowns");
         if (sortDropDown && sortDropDown->m_CachedPtr.m_value) {
             sortDropDown->ReloadData();
             HackDropdown(sortDropDown);
@@ -121,11 +122,14 @@ namespace BetterSongList {
     }
 
     static bool CheckIsVisible(ITransformerPlugin* plugin) {
+        if (!plugin) return false;
+        DEBUG("CheckIsVisible");
         plugin->ContextSwitch(HookSelectedCategory::get_lastSelectedCategory(), HookSelectedCollection::get_lastSelectedCollection());
 		return plugin->get_visible();
     }
 
     void FilterUI::UpdateVisibleTransformers() {
+        DEBUG("FilterUI::UpdateVisibleTransformers");
         sortOptions.clear();
         auto& sortMethods = SortMethods::get_methods();
         for (const auto& [key, value] : sortMethods) {
@@ -136,6 +140,7 @@ namespace BetterSongList {
             }
         }
 
+        DEBUG("Got {} filters", sortOptions.size());
         auto instance = get_instance();
         auto& sortOptionsList = instance->sortOptionsList;
         sortOptionsList->Clear();
@@ -144,12 +149,13 @@ namespace BetterSongList {
         filterOptions.clear();
         auto& filterMethods = FilterMethods::get_methods();
         for (const auto& [key, value] : filterMethods) {
-            ITransformerPlugin* plugin = value->as<ITransformerPlugin*>();
+            ITransformerPlugin* plugin = value ? value->as<ITransformerPlugin*>() : nullptr;
             if (!plugin || CheckIsVisible(plugin)) {
                 filterOptions[key] = value;
             }
         }
         
+        DEBUG("Got {} filters", filterOptions.size());
         auto& filterOptionsList = instance->filterOptionsList;
         for (const auto& [key, value] : filterOptions) filterOptionsList->Add(StringW(key));
     }
@@ -162,16 +168,17 @@ namespace BetterSongList {
     }
 
     void FilterUI::SetSort(std::string selected, bool storeToConfig, bool refresh) {
-        if (sortOptions.size() == 0) return;
+        if (sortOptions.empty()) return;
+        DEBUG("FilterUI::SetSort({}, {}, {})", selected, storeToConfig, refresh);
 
         auto sortItr = sortOptions.find(selected);
         if (selected.empty() || sortItr == sortOptions.end()) {
-            sortItr = sortOptions.end()--;
+            sortItr = sortOptions.find("Default");
             selected = sortItr->first;
         }
 
         auto newSort = sortItr->second;
-        auto unavCheck = newSort->as<IAvailabilityCheck*>();
+        auto unavCheck = newSort ? newSort->as<IAvailabilityCheck*>() : nullptr;
         std::string reason = unavCheck ? unavCheck->GetUnavailableReason() : "";
 
         auto instance = get_instance();
@@ -207,14 +214,15 @@ namespace BetterSongList {
     void FilterUI::SetFilter(std::string selected, bool storeToConfig, bool refresh) {
         if (filterOptions.size() == 0) return;
 
+        DEBUG("FilterUI::SetFilter({}, {}, {})", selected, storeToConfig, refresh);
         auto filterItr = filterOptions.find(selected);
         if (selected.empty() || filterItr == filterOptions.end()) {
-            filterItr = filterOptions.end()--;
+            filterItr = filterOptions.find("All");
             selected = filterItr->first;
         }
 
         auto newFilter = filterItr->second;
-        auto unavCheck = newFilter->as<IAvailabilityCheck*>();
+        auto unavCheck = newFilter ? newFilter->as<IAvailabilityCheck*>() : nullptr;
         std::string reason = unavCheck ? unavCheck->GetUnavailableReason() : "";
 
         auto instance = get_instance();
@@ -256,6 +264,7 @@ namespace BetterSongList {
     }
 
     void FilterUI::Init() {
+        DEBUG("FilterUI::Init");
 		UpdateVisibleTransformers();
 		SetSort(config.lastSort, false, false);
 		SetFilter(config.lastFilter, false, false);
@@ -281,11 +290,7 @@ namespace BetterSongList {
     void FilterUI::HackDropdown(HMUI::DropdownWithTableView* dropdown) {
         int c = std::min(9, dropdown->get_tableViewDataSource()->NumberOfCells());
         dropdown->numberOfVisibleCells = c;
-
         dropdown->ReloadData();
-
-        bool isPostGagaUI = true;
-        if (isPostGagaUI) return;
     }
 
     void FilterUI::ShowErrorASAP(std::string_view text) {

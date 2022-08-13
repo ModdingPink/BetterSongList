@@ -1,6 +1,7 @@
 #include "Patches/HookSelectedCategory.hpp"
 #include "Patches/RestoreTableScroll.hpp"
 #include "config.hpp"
+#include "logging.hpp"
 
 #include "UI/FilterUI.hpp"
 
@@ -12,6 +13,7 @@ namespace BetterSongList::Hooks {
     }
     
     void HookSelectedCategory::SelectLevelCategoryViewController_LevelFilterCategoryIconSegmentedControlDidSelectCell_Prefix(GlobalNamespace::SelectLevelCategoryViewController* self) {
+		DEBUG("SelectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell():Prefix");
         if (lastSelectedCategory == self->get_selectedLevelCategory()) {
             return;
         }
@@ -21,6 +23,7 @@ namespace BetterSongList::Hooks {
 
         RestoreTableScroll::ResetScroll();
 
+		WARNING("SelectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell():Prefix => ResetScroll()");
         auto instance = FilterUI::get_instance();
         instance->UpdateTransformerOptionsAndDropdowns();
     }

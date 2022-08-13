@@ -8,7 +8,7 @@
 #include "System/Collections/Generic/HashSet_1.hpp"
 
 // from PresetFilter
-MAKE_AUTO_HOOK_FIND(LevelFilterParams_ctor_args,
+MAKE_AUTO_HOOK_FIND_INSTANCE(LevelFilterParams_ctor_args,
     classof(GlobalNamespace::LevelFilterParams*),
     ".ctor",
     void,
@@ -49,7 +49,7 @@ MAKE_AUTO_HOOK_FIND(LevelFilterParams_ctor_args,
 }
 
 // from PresetFilter
-MAKE_AUTO_HOOK_FIND(LevelFilterParams_ctor_0,
+MAKE_AUTO_HOOK_FIND_INSTANCE(LevelFilterParams_ctor_0,
     classof(GlobalNamespace::LevelFilterParams*),
     ".ctor",
     void,

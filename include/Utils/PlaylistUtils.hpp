@@ -10,7 +10,6 @@ namespace BetterSongList::PlaylistUtils {
     using Dictionary = System::Collections::Generic::Dictionary_2<T, U>;
     
     bool get_hasPlaylistLib();
-    bool get_requiresListCast();
     Dictionary<StringW, GlobalNamespace::IBeatmapLevelPack*>* get_builtinPacks();
 
     void Init();

@@ -3,10 +3,10 @@
 #include "logging.hpp"
 
 #include "GlobalNamespace/LevelSelectionFlowCoordinator.hpp"
-#include "Patches/NavigationRestorePrepare.hpp"
+#include "Patches/RestoreLevelSelection.hpp"
 
-// from NavigationRestorePrepare
+// from RestoreLevelSelection
 MAKE_AUTO_HOOK_MATCH(LevelSelectionFlowCoordinator_DidActivate, &GlobalNamespace::LevelSelectionFlowCoordinator::DidActivate, void, GlobalNamespace::LevelSelectionFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
-    BetterSongList::Hooks::NavigationRestorePrepare::Prefix(self);
+    BetterSongList::Hooks::RestoreLevelSelection::LevelSelectionFlowCoordinator_DidActivate_Prefix(self->startState);
     LevelSelectionFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 }

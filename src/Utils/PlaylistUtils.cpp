@@ -16,11 +16,6 @@ namespace BetterSongList::PlaylistUtils {
         return hasPlaylistLib;
     }
 
-    static bool requiresListCast = false;
-    bool get_requiresListCast() {
-        return requiresListCast;
-    }
-
     SafePtr<Dictionary<StringW, GlobalNamespace::IBeatmapLevelPack*>> builtinPacks;
     Dictionary<StringW, GlobalNamespace::IBeatmapLevelPack*>* get_builtinPacks() {
         if (!builtinPacks) {
@@ -32,7 +27,6 @@ namespace BetterSongList::PlaylistUtils {
     void Init() {
         // TODO: check if right name
         hasPlaylistLib = !Modloader::requireMod("playlistcore");
-        requiresListCast = false;
     }
 
     GlobalNamespace::IBeatmapLevelPack* GetPack(StringW packName) {
@@ -60,7 +54,7 @@ namespace BetterSongList::PlaylistUtils {
             return v;
         } else if (hasPlaylistLib) {
             /*
-            TODO: Playlist lib tie-in
+            TODO: Playlist lib tie-in. if playlist stuff is not core symbol lookups?
             auto playlists = playlistlib.getallplaylists;
             for (auto p : playlists) {
                 if (p->get_packName() == packName) {
@@ -80,7 +74,7 @@ namespace BetterSongList::PlaylistUtils {
 
     ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection) {
         // TODO: idem
-        auto collection = levelCollection ? levelCollection->get_beatmapLevelCollection() : 0;
+        auto collection = levelCollection ? levelCollection->get_beatmapLevelCollection() : nullptr;
         return collection ? collection->get_beatmapLevels() : ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>(il2cpp_array_size_t(0));
     }
 }

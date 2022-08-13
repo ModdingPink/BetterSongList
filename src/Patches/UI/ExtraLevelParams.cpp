@@ -35,8 +35,6 @@ namespace BetterSongList::Hooks {
             extraUI = UnityEngine::Object::Instantiate(levelParamsPanel->get_gameObject(), levelParamsPanel->get_transform()->get_parent());
             UnityEngine::Object::Destroy(extraUI->GetComponent<GlobalNamespace::LevelParamsPanel*>());
             
-            bool isPostGagaUI = true;
-
             auto pos = levelParamsPanel->get_transform()->get_localPosition();
             pos.y += 3.5f;
             levelParamsPanel->get_transform()->set_localPosition(pos);

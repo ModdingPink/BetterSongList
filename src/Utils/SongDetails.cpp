@@ -33,7 +33,7 @@ namespace BetterSongList::SongDetails {
         } else if (finishedInitAttempt && songDetails.size() == 0) {
             return "Could not find any songs";
         } 
-        return "Unknown Issue";
+        return "";
     }
 
     custom_types::Helpers::Coroutine TryGet(std::function<void()> onFinished) {

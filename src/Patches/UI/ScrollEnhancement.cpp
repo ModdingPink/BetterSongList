@@ -1,5 +1,6 @@
 #include "Patches/UI/ScrollEnhancement.hpp"
 #include "config.hpp"
+#include "logging.hpp"
 
 #include "bsml/shared/Helpers/utilities.hpp"
 #include "bsml/shared/Helpers/delegates.hpp"
@@ -39,6 +40,7 @@ namespace BetterSongList::Hooks {
     SafePtr<Array<UnityEngine::GameObject*>> ScrollEnhancement::buttons;
 
     void ScrollEnhancement::LevelCollectionTableView_Init_Prefix(GlobalNamespace::LevelCollectionTableView* self, bool isInitialized, HMUI::TableView* tableView) {
+        INFO("ScrollEnhancement::LevelCollectionTableView_Init_Prefix");
         if (!isInitialized) 
             GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(DoTheFunny(tableView, self->get_transform())));
 
@@ -46,12 +48,11 @@ namespace BetterSongList::Hooks {
     }
 
     void ScrollEnhancement::UpdateState() {
-        if (!buttons) {
-            ArrayW<UnityEngine::GameObject*> btns{buttons.ptr()};
-            for (auto btn : btns) {
-                if (btn && btn->m_CachedPtr.m_value) {
-                    btn->SetActive(config.extendSongScrollbar);
-                }
+        if (!buttons) return;
+        ArrayW<UnityEngine::GameObject*> btns{buttons.ptr()};
+        for (auto btn : btns) {
+            if (btn && btn->m_CachedPtr.m_value) {
+                btn->SetActive(config.extendSongScrollbar);
             }
         }
     }
@@ -63,11 +64,12 @@ namespace BetterSongList::Hooks {
                 ->get_parent() // LevelsTableView
                 ->get_parent() // LevelCollectionViewController
             );
+
         auto newBtn = reinterpret_cast<UnityEngine::RectTransform*>(newBtnGo->get_transform());
         newBtn->set_anchorMin({0.96f, 0.893f - vOffs});
         newBtn->set_anchorMax({1, 0.953f - vOffs});
 
-        auto i = newBtn->GetComponentInChildren<HMUI::ImageView*>();
+        auto i = newBtn->GetComponentInChildren<HMUI::ImageView*>(true);
         BSML::Utilities::SetImage(i, Icon);
 
         auto iT = i->get_rectTransform();
@@ -108,5 +110,10 @@ namespace BetterSongList::Hooks {
         btnArr[1] = BuildButton(button, "#HeightIcon", 0.09f, 0, [table](){Scroll<FloatLiteral(1.0f), 0>(table);})->get_gameObject();
         btnArr[2] = BuildButton(button, "#HeightIcon", 0.77f, 180, [table](){Scroll<FloatLiteral(1.0f), 1>(table);})->get_gameObject();
         btnArr[3] = btnDownFast->get_gameObject();
+
+        buttons.emplace(static_cast<Array<UnityEngine::GameObject*>*>(btnArr));
+
+        co_yield nullptr;
+        UpdateState();
     }
 }

@@ -12,9 +12,9 @@ if (-not ($LastExitCode -eq 0)) {
 }
 
 if ($debug.IsPresent) {
-    & adb push build/debug/libbsml-test.so /sdcard/Android/data/com.beatgames.beatsaber/files/mods/libbsml-test.so
+    & adb push build/debug/libbsl.so /sdcard/Android/data/com.beatgames.beatsaber/files/mods/libbsl.so
 } else {
-    & adb push build/libbsml-test.so /sdcard/Android/data/com.beatgames.beatsaber/files/mods/libbsml-test.so
+    & adb push build/libbsl.so /sdcard/Android/data/com.beatgames.beatsaber/files/mods/libbsl.so
 }
 
 & adb shell am force-stop com.beatgames.beatsaber

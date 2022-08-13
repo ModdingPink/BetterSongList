@@ -1,61 +1,64 @@
 #include "Patches/RestoreLevelSelection.hpp"
 #include "Patches/RestoreTableScroll.hpp"
-#include "Patches/NavigationRestorePrepare.hpp"
 #include "Patches/HookLevelCollectionTableSet.hpp"
 
 #include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Sprite.hpp"
+#include "GlobalNamespace/IBeatmapLevelPackCollection.hpp"
+#include "GlobalNamespace/IBeatmapLevelPack.hpp"
+#include "GlobalNamespace/BeatmapLevelPack.hpp"
+#include "GlobalNamespace/IBeatmapLevelCollection.hpp"
+#include "GlobalNamespace/IBeatmapLevel.hpp"
+#include "GlobalNamespace/IDifficultyBeatmap.hpp"
+
+#include "Utils/PlaylistUtils.hpp"
 
 #include "logging.hpp"
 #include "config.hpp"
 
-#include "songloader/include/CustomTypes/SongLoader.hpp"
+#include "songloader/include/Utils/FindComponentsUtils.hpp"
 
 namespace BetterSongList::Hooks {
-    void RestoreLevelSelection::LevelFilteringNavigationController_ShowPacksInSecondChildController_Prefix(StringW& levelPackIdToBeSelectedAfterPresent) {
-        if (Il2CppString::IsNullOrEmpty(levelPackIdToBeSelectedAfterPresent)) {
-            levelPackIdToBeSelectedAfterPresent = NavigationRestorePrepare::get_collection();
-        }
-    }
-
-    bool RestoreLevelSelection::LevelCollectionTableView_SelectLevel_Prefix(System::Collections::Generic::IReadOnlyList_1<GlobalNamespace::IPreviewBeatmapLevel*>* previewBeatmapLevels) {
-        return previewBeatmapLevels;
-    }
-
-    void RestoreLevelSelection::LevelCollectionNavigationController_DidActivate_Prefix(GlobalNamespace::LevelCollectionNavigationController* self, bool addedToHierarchy, GlobalNamespace::IPreviewBeatmapLevel*& beatmapLevelToBeSelectedAfterPresent) {
-        auto restoreTo = BetterSongList::Hooks::NavigationRestorePrepare::get_level();
-        if (!addedToHierarchy || self->beatmapLevelToBeSelectedAfterPresent || !config.reselectLastSong || restoreTo.empty()) {
+    void RestoreLevelSelection::LevelSelectionFlowCoordinator_DidActivate_Prefix(GlobalNamespace::LevelSelectionFlowCoordinator::State*& startState) {
+        if (startState) {
             return;
         }
 
-        auto mapList = BetterSongList::Hooks::HookLevelCollectionTableSet::get_lastOutMapList();
-        self->beatmapLevelToBeSelectedAfterPresent = mapList ? mapList.FirstOrDefault([&restoreTo](auto level) {
-            return level->get_levelID() == restoreTo;
-        }) : nullptr;
-    }
+        auto restoreCategory = config.lastCategory;
+        auto restoreLevel = config.lastSong;
+        GlobalNamespace::IPreviewBeatmapLevel* m = nullptr;
 
-    void RestoreLevelSelection::LevelCollectionNavigationController_DidActivate_Postfix(bool addedToHierarchy, bool& hideDetailViewController) {
-        RestoreTableScroll::GotoLastSelectedOnNextSetData();
-        if (addedToHierarchy) hideDetailViewController = false;
-    }
+        if (!restoreLevel.empty()) {
+            auto bm = RuntimeSongLoader::FindComponentsUtils::GetBeatmapLevelsModel();
+            auto packCollection = bm->get_allLoadedBeatmapLevelPackCollection();
+            auto packs = packCollection->get_beatmapLevelPacks();
 
-    void RestoreLevelSelection::SelectLevelCategoryViewController_Setup_Prefix(GlobalNamespace::SelectLevelCategoryViewController::LevelCategory& selectedCategory) {
-        auto restoreTo = NavigationRestorePrepare::get_category();
-
-        if (restoreTo != GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None)
-            selectedCategory = restoreTo;
-    }
-
-    bool RestoreLevelSelection::LevelPackDetailViewController_RefreshAvailabilityAsync_Prefix(GlobalNamespace::LevelPackDetailViewController* self, GlobalNamespace::IBeatmapLevelPack*& pack) {
-        if (!pack) {
-            auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
-            pack = songLoader->CustomLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
+            for (auto pack : packs) {
+                auto levelCollection = pack->i_IAnnotatedBeatmapLevelCollection()->get_beatmapLevelCollection();
+                ListWrapper<GlobalNamespace::IPreviewBeatmapLevel*> levels{levelCollection->get_beatmapLevels()};
+                for (auto level : levels) {
+                    if (level->get_levelID() != restoreLevel) {
+                        continue;
+                    }
+                    m = level;
+                    break;
+                }
+            }
         }
 
-        if (!pack) {
-            self->get_gameObject()->SetActive(false);
-            return false;
-        }
-
-        return true;
+        auto lastPack = PlaylistUtils::GetPack(config.lastPack);
+        startState = GlobalNamespace::LevelSelectionFlowCoordinator::State::New_ctor(
+            System::Nullable_1<LevelCategory>(restoreCategory, true),
+            GlobalNamespace::BeatmapLevelPack::New_ctor(
+                lastPack ? lastPack->get_packID() : nullptr,
+                nullptr,
+                nullptr,
+                nullptr,
+                nullptr,
+                nullptr
+            )->i_IBeatmapLevelPack(),
+            m,
+            nullptr
+        );
     }
 }

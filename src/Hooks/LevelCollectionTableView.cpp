@@ -2,16 +2,9 @@
 #include "logging.hpp"
 
 #include "Patches/RestoreTableScroll.hpp"
-#include "Patches/RestoreLevelSelection.hpp"
 #include "Patches/HookLevelCollectionTableSet.hpp"
 #include "Patches/UI/ScrollEnhancement.hpp"
 #include "GlobalNamespace/LevelCollectionTableView.hpp"
-
-// from RestoreLevelSelection
-MAKE_AUTO_HOOK_ORIG_MATCH(LevelCollectionTableView_SelectLevel, &GlobalNamespace::LevelCollectionTableView::SelectLevel, void, GlobalNamespace::LevelCollectionTableView* self, GlobalNamespace::IPreviewBeatmapLevel* beatmapLevel) {
-    if (BetterSongList::Hooks::RestoreLevelSelection::LevelCollectionTableView_SelectLevel_Prefix(self->previewBeatmapLevels))
-        LevelCollectionTableView_SelectLevel(self, beatmapLevel);
-}
 
 // from RestoreTableScroll
 // from UI/ScrollEnhancement

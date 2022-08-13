@@ -2,13 +2,15 @@
 
 #include <string>
 #include "GlobalNamespace/SelectLevelCategoryViewController.hpp"
+// honestly fuck typing this out completely every time
+using LevelCategory = GlobalNamespace::SelectLevelCategoryViewController::LevelCategory;
 
 struct Config {
     std::string lastSong = "";
     std::string lastPack = "";
     std::string lastSort = "";
     std::string lastFilter = "";
-    GlobalNamespace::SelectLevelCategoryViewController::LevelCategory lastCategory = GlobalNamespace::SelectLevelCategoryViewController::LevelCategory::None;
+    LevelCategory lastCategory = LevelCategory::None;
     bool reselectLastSong;
     bool sortAscending;
     bool enableAlphabetScrollBar;
