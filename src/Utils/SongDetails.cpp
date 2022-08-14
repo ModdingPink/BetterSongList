@@ -1,4 +1,5 @@
 #include "Utils/SongDetails.hpp"
+#include "logging.hpp"
 
 #include "sdc-wrapper/shared/BeatStarSong.hpp"
 #include <thread>
@@ -30,25 +31,18 @@ namespace BetterSongList::SongDetails {
     std::string GetUnavailabilityReason() {
         if (!finishedInitAttempt) {
             return "Initialization is not complete";
-        } else if (finishedInitAttempt && songDetails.size() == 0) {
+        } else if (songDetails.size() == 0) {
             return "Could not find any songs";
-        } 
+        }
         return "";
     }
 
-    custom_types::Helpers::Coroutine TryGet(std::function<void()> onFinished) {
-        if (attemptedToInit) co_return;
+    void Init() {
+        if (attemptedToInit) return;
         attemptedToInit = true;
         std::thread([](){
             songDetails = SDC_wrapper::BeatStarSong::GetAllSongs();
             finishedInitAttempt = true;
         }).detach();
-
-        while (!finishedInitAttempt) {
-            co_yield nullptr;
-        }
-
-        if (onFinished) onFinished();
-        co_return;
     }
 }

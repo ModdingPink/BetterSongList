@@ -40,7 +40,7 @@ namespace BetterSongList::Hooks {
     SafePtr<Array<UnityEngine::GameObject*>> ScrollEnhancement::buttons;
 
     void ScrollEnhancement::LevelCollectionTableView_Init_Prefix(GlobalNamespace::LevelCollectionTableView* self, bool isInitialized, HMUI::TableView* tableView) {
-        INFO("ScrollEnhancement::LevelCollectionTableView_Init_Prefix");
+        INFO("ScrollEnhancement::LevelCollectionTableView_Init_Prefix({}, {}, {})", fmt::ptr(self), isInitialized, fmt::ptr(tableView));
         if (!isInitialized) 
             GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(DoTheFunny(tableView, self->get_transform())));
 
@@ -90,14 +90,16 @@ namespace BetterSongList::Hooks {
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
 
         auto r = reinterpret_cast<UnityEngine::RectTransform*>(table->get_transform()->get_parent()->get_parent());
-        r->set_sizeDelta({4, 0});
+        auto sizeDelta = r->get_sizeDelta();
+        sizeDelta.x += 4;
+        r->set_sizeDelta(sizeDelta);
 
         r = reinterpret_cast<UnityEngine::RectTransform*>(table->get_transform()->get_parent());
         auto anchorMin = r->get_anchorMin();
         anchorMin.x += 0.02f;
-        auto sizeDelta = r->get_sizeDelta();
-        sizeDelta.x -= 2.0f;
         r->set_anchorMin(anchorMin);
+        sizeDelta = r->get_sizeDelta();
+        sizeDelta.x -= 2.0f;
         r->set_sizeDelta(sizeDelta);
         static ConstString btnPath{"ScrollBar/UpButton"};
         auto button = a->Find(btnPath);

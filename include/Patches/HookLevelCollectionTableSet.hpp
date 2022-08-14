@@ -29,12 +29,7 @@ namespace BetterSongList::Hooks {
             static SafePtr<Array<GlobalNamespace::IPreviewBeatmapLevel*>> lastInMapList;
             static SafePtr<Array<GlobalNamespace::IPreviewBeatmapLevel*>> lastOutMapList;
             static SafePtr<Array<GlobalNamespace::IPreviewBeatmapLevel*>> asyncPreProcessed;
-            struct CustomLegendPair {
-                CustomLegendPair(const std::string& key, int value) : key(key), value(value) {}
-                std::string key;
-                int value;
-            };
-            static std::vector<CustomLegendPair> customLegend;
+            static ISorterWithLegend::Legend customLegend;
             static bool prepareThreadCurrentlyRunning;
     };
 }

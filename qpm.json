@@ -83,6 +83,11 @@
       "id": "cpp-semver",
       "versionRange": "^0.1.2",
       "additionalData": {}
+    },
+    {
+      "id": "questui",
+      "versionRange": "^0.16.4",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

@@ -24,7 +24,7 @@ namespace BetterSongList::Hooks {
     void SongDeleteButton::StandardLevelDetailView_RefreshContent_Postfix(GlobalNamespace::StandardLevelDetailView* self, UnityEngine::UI::Button* practiceButton, GlobalNamespace::IPreviewBeatmapLevel* level) {
         if (!deleteButton && practiceButton) {
             auto newButton = UnityEngine::Object::Instantiate(practiceButton->get_gameObject(), practiceButton->get_transform()->get_parent());
-            auto deleteButton = newButton->GetComponentInChildren<UnityEngine::UI::Button*>();
+            deleteButton = newButton->GetComponentInChildren<UnityEngine::UI::Button*>();
             auto deleteConfirmHandlerInstance = DeleteConfirmHandler::get_instance();
 
             auto onClick = UnityEngine::UI::Button::ButtonClickedEvent::New_ctor();

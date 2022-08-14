@@ -9,7 +9,6 @@
 #include "sdc-wrapper/shared/BeatStarSong.hpp"
 
 namespace BetterSongList {
-    // TODO: define these
     static ComparableFunctionSorterWithLegend alphabeticalSongname(
         [](auto a, auto b) -> int {
             return static_cast<std::u16string_view>(a->get_songName()).compare(static_cast<std::u16string_view>(b->get_songName()));

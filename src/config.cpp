@@ -27,7 +27,6 @@ void SaveConfig() {
     Save(lastFilter);
     doc.AddMember("lastCategory", config.lastCategory.value, allocator);
     Save(reselectLastSong);
-    Save(sortAscending);
     Save(enableAlphabetScrollBar);
     Save(clearFiltersOnPlaylistSelect);
     Save(modBasegameSearch);
@@ -85,7 +84,6 @@ bool LoadConfig() {
     GET_STRING(lastFilter);
     GET_INT(lastCategory);
     GET_BOOL(reselectLastSong);
-    GET_BOOL(sortAscending);
     GET_BOOL(enableAlphabetScrollBar);
     GET_BOOL(clearFiltersOnPlaylistSelect);
     GET_BOOL(modBasegameSearch);

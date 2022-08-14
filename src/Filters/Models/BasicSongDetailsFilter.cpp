@@ -4,6 +4,8 @@
 #include "Utils/BeatmapUtils.hpp"
 
 namespace BetterSongList {
+    SafePtr<System::Threading::Tasks::TaskCompletionSource_1<bool>> BasicSongDetailsFilter::loadingTask;
+
     BasicSongDetailsFilter::BasicSongDetailsFilter(const std::function<bool(const SDC_wrapper::BeatStarSong*)>& func) 
         : IFilter(), IAvailabilityCheck(), filterValueTransformer(func) {
 
@@ -13,8 +15,21 @@ namespace BetterSongList {
         return SongDetails::get_finishedInitAttempt(); 
     }
 
-    void BasicSongDetailsFilter::Prepare() {
+    System::Threading::Tasks::Task* BasicSongDetailsFilter::Prepare() {
+        if (!loadingTask) {
+            loadingTask = System::Threading::Tasks::TaskCompletionSource_1<bool>::New_ctor();
+            std::thread([](){
+                while(!SongDetails::get_finishedInitAttempt()) {
+                    std::this_thread::yield();
+                }
 
+                loadingTask->TrySetResult(true);
+                loadingTask.emplace(nullptr);
+            }).detach();
+            return reinterpret_cast<System::Threading::Tasks::Task*>(loadingTask->get_Task());
+        }
+
+        return System::Threading::Tasks::Task::get_CompletedTask();
     }
     
     bool BasicSongDetailsFilter::GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) { 

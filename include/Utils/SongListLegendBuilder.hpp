@@ -3,8 +3,9 @@
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 #include <string>
-#include <map>
+#include <unordered_map>
+#include "Sorters/Models/ISorter.hpp"
 
 namespace BetterSongList::SongListLegendBuilder {
-    std::map<std::string, int> BuildFor(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> levels, std::function<std::string(GlobalNamespace::IPreviewBeatmapLevel*)> builder, int entryLengthLimit = 6, int valueLimit = 28);
+    ISorterWithLegend::Legend BuildFor(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> levels, std::function<std::string(GlobalNamespace::IPreviewBeatmapLevel*)> builder, int entryLengthLimit = 6, int valueLimit = 28);
 }

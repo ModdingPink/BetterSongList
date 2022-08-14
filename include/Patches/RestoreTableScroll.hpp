@@ -8,7 +8,6 @@ namespace BetterSongList::Hooks {
         public:
             static void Prefix(GlobalNamespace::LevelCollectionTableView* self);
             static void ResetScroll();
-            static void GotoLastSelectedOnNextSetData();
         private:
             friend class DoTheFunnySelect;
             static std::optional<int> scrollToIndex;

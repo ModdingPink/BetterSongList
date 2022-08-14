@@ -14,7 +14,7 @@ namespace BetterSongList {
         return true;
     }
 
-    void PrimitiveFunctionSorter::Prepare() {}
+    System::Threading::Tasks::Task* PrimitiveFunctionSorter::Prepare() { return System::Threading::Tasks::Task::get_CompletedTask(); }
 
     std::optional<float> PrimitiveFunctionSorter::GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) const {
         return sortValueGetter(level);
@@ -47,7 +47,7 @@ namespace BetterSongList {
         return true;
     }
 
-    void ComparableFunctionSorter::Prepare() {}
+    System::Threading::Tasks::Task* ComparableFunctionSorter::Prepare() { return System::Threading::Tasks::Task::get_CompletedTask(); }
 
     void ComparableFunctionSorter::DoSort(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& levels, bool ascending) const {
         std::sort(levels.begin(), levels.end(), *this);

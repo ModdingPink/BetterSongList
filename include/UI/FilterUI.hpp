@@ -19,14 +19,14 @@ DECLARE_CLASS_CODEGEN(BetterSongList, FilterUI, Il2CppObject,
     DECLARE_INSTANCE_FIELD(UnityEngine::RectTransform*, root);
     DECLARE_INSTANCE_FIELD(HMUI::DropdownWithTableView*, sortDropDown);
     DECLARE_INSTANCE_FIELD(HMUI::DropdownWithTableView*, filterDropDown);
-    DECLARE_INSTANCE_FIELD(ListWrapper<Il2CppObject*>, sortOptionsList);
-    DECLARE_INSTANCE_FIELD(ListWrapper<Il2CppObject*>, filterOptionsList);
+    DECLARE_INSTANCE_FIELD(ListWrapper<StringW>, sortOptionsList);
+    DECLARE_INSTANCE_FIELD(ListWrapper<StringW>, filterOptionsList);
     DECLARE_INSTANCE_FIELD(bool, warningLoadInProgress);
     DECLARE_INSTANCE_FIELD(HMUI::ImageView*, filterLoadingIndicator);
-    DECLARE_INSTANCE_FIELD(BSML::ClickableText*, sortDirection);
+    DECLARE_INSTANCE_FIELD(BSML::ClickableImage*, sortDirection);
     DECLARE_INSTANCE_FIELD(TMPro::TextMeshProUGUI*, failTextLabel);
     DECLARE_INSTANCE_FIELD(bool, settingsWereOpened);
-    DECLARE_INSTANCE_FIELD(BSML::ClickableText*, settingsButton);
+    DECLARE_INSTANCE_FIELD(BSML::ClickableImage*, settingsButton);
     DECLARE_INSTANCE_FIELD(BSML::ModalView*, incompatibilityModal);
 
     DECLARE_INSTANCE_METHOD(void, UpdateDropdowns);

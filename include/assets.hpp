@@ -42,6 +42,8 @@ struct IncludedAsset {
 
 namespace IncludedAssets {
 
+	DECLARE_FILE(CaratDown_png)
+	DECLARE_FILE(CaratUp_png)
 	DECLARE_FILE(DoubleArrowIcon_png)
 	DECLARE_FILE(MainUI_bsml)
 	DECLARE_FILE(Settings_bsml)

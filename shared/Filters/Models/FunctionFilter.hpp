@@ -8,7 +8,7 @@ namespace BetterSongList {
             FunctionFilter(const std::function<bool(GlobalNamespace::IPreviewBeatmapLevel*)>& func);
 
             virtual bool get_isReady() const override;
-            virtual void Prepare() override;
+            virtual System::Threading::Tasks::Task* Prepare() override;
             virtual bool GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) override;
         private:
             std::function<bool(GlobalNamespace::IPreviewBeatmapLevel*)> valueProvider;

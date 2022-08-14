@@ -2,7 +2,9 @@
 	<horizontal spacing='5' child-expand-width='false' preferred-width='106'>
 		<horizontal spacing='1' preferred-width='47' child-expand-width='false'>
 			<dropdown-list-setting id='sortDropdown' options='sortOptionsList' text='Sort' on-change='_SetSort' preferred-width='44'/>
-			<clickable-text id='sortDirection' text='▼' on-click='ToggleSortDirection' font-size='5' hover-hint='Sort direction (Ascending / Descending)'/>
+			<stack>
+				<clickable-image id='sortDirection' src='BetterSongList_carat_down' on-click='ToggleSortDirection' hover-hint='Sort direction (Ascending / Descending)' pref-width='5' pref-height='5' preserve-aspect="true"/>
+			</stack>
 		</horizontal>
 		<horizontal child-expand-width='false' preferred-width='44'>
 			<dropdown-list-setting id='filterDropdown' options='filterOptionsList' text='Filter' on-change='_SetFilter'/>

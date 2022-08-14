@@ -7,10 +7,23 @@
 
 using namespace Sombrero::Linq::Functional;
 
-struct LegendPair {
-    LegendPair(const std::string& str, const int& num) : first(str), second(num) {}
-    std::string first;
-    int second;
+struct GroupedLegendPairs : std::vector<BetterSongList::ISorterWithLegend::LegendPair> {
+    GroupedLegendPairs(const std::string& group) : std::vector<BetterSongList::ISorterWithLegend::LegendPair>(), group(group) {}
+    GroupedLegendPairs(const std::string& group, const BetterSongList::ISorterWithLegend::LegendPair& initialPair) : GroupedLegendPairs(group) { emplace_back(initialPair); }
+    
+    bool operator>(const std::string& a) const {
+        return group < a;
+    }
+
+    bool operator<(const std::string& a) const {
+        return group < a;
+    }
+
+    bool operator==(const std::string& a) const {
+        return group == a;
+    }
+
+    std::string group;
 };
 
 struct ToUpperHelper : public std::string_view {
@@ -23,9 +36,9 @@ struct ToUpperHelper : public std::string_view {
 };
 
 namespace BetterSongList::SongListLegendBuilder {
-    std::map<std::string, int> BuildFor(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> levels, std::function<std::string(GlobalNamespace::IPreviewBeatmapLevel*)> builder, int entryLengthLimit, int valueLimit) {
+    ISorterWithLegend::Legend BuildFor(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> levels, std::function<std::string(GlobalNamespace::IPreviewBeatmapLevel*)> builder, int entryLengthLimit, int valueLimit) {
         
-        std::map<std::string, std::vector<LegendPair>> grouped;
+        std::vector<GroupedLegendPairs> grouped;
         // start at -1 because 0 based index, and we have to pre increment due to the continue clause
         for (int i = -1; auto& level : levels) {
             i++;
@@ -36,17 +49,17 @@ namespace BetterSongList::SongListLegendBuilder {
 
             // Grouping by key toUpper;
             auto KEY = ToUpperHelper(str).toUpper();
-            auto itr = grouped.find(KEY);
+            auto itr = std::find(grouped.begin(), grouped.end(), KEY);
             if (itr == grouped.end()) {
-                grouped.emplace(KEY, std::vector<LegendPair>()).first->second.emplace_back(str, i);
+                grouped.emplace_back(KEY, ISorterWithLegend::LegendPair(str, i));
             } else {
-                itr->second.emplace_back(str, i);
+                itr->emplace_back(str, i);
             }
         }
 
         int grouped_size = grouped.size();
         int amt = std::min(grouped_size, valueLimit);
-        std::map<std::string, int> result;
+        ISorterWithLegend::Legend result;
         if (amt > 1) {
             // get the keys at intervals with step size
             float step = ((float)(grouped_size - 1) / (float)(amt - 1));
@@ -54,10 +67,10 @@ namespace BetterSongList::SongListLegendBuilder {
                 auto bmi = (int)std::round(step * i);
                 if (bmi > grouped_size - 1) bmi = grouped_size - 1;
                 auto itr = std::next(grouped.begin(), bmi);
-                auto transformedResult = itr->first;
+                auto transformedResult = itr->group;
                 if (transformedResult.size() > entryLengthLimit)
                     transformedResult = transformedResult.substr(0, entryLengthLimit);
-                result[transformedResult] = itr->second.front().second;
+                result.emplace_back(transformedResult, itr->begin()->second);
             }
         }
         return result;

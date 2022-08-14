@@ -17,7 +17,9 @@
 static const float MONTH_SECS = 1.0f / (60 * 60 * 24 * 30.4f);
 
 namespace BetterSongList {
+    SafePtr<System::Threading::Tasks::TaskCompletionSource_1<bool>> FolderDateSorter::loadingTask;
     std::map<std::string, int> FolderDateSorter::songTimes;
+
     bool FolderDateSorter::isLoading = false;
 
     FolderDateSorter::FolderDateSorter() : ISorterWithLegend(), ISorterPrimitive() {}
@@ -26,8 +28,8 @@ namespace BetterSongList {
         return !songTimes.empty();
     }
 
-    void FolderDateSorter::Prepare() {
-        Prepare(false);
+    System::Threading::Tasks::Task* FolderDateSorter::Prepare() {
+        return Prepare(false);
     }
 
     void FolderDateSorter::OnSongsLoaded(const std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*>& songs) {
@@ -61,24 +63,33 @@ namespace BetterSongList {
                 }
             }
         }
+
+        loadingTask->TrySetResult(true);
+		loadingTask.emplace(nullptr);
         isLoading = false;
     }
 
-    void FolderDateSorter::Prepare(bool fullReload) {
+    System::Threading::Tasks::Task* FolderDateSorter::Prepare(bool fullReload) {
         if (songTimes.empty()) {
             RuntimeSongLoader::API::AddSongsLoadedEvent(std::bind(&FolderDateSorter::OnSongsLoaded, this, std::placeholders::_1));
+        }
+
+        if (!loadingTask) {
+            loadingTask = System::Threading::Tasks::TaskCompletionSource_1<bool>::New_ctor();
         }
 
         auto loader = RuntimeSongLoader::SongLoader::GetInstance();
 
         if (!loader->HasLoaded || loader->IsLoading) {
-            return;
+            return reinterpret_cast<System::Threading::Tasks::Task*>(loadingTask->get_Task());
         }
 
         if (!isLoading) {
             isLoading = true;
             std::thread(std::bind(&FolderDateSorter::GatherFolderInfoThread, this, fullReload)).detach();
         }
+
+        return reinterpret_cast<System::Threading::Tasks::Task*>(loadingTask->get_Task());
     }
 
     std::optional<float> FolderDateSorter::GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) const {

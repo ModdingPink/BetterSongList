@@ -1,9 +1,10 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <optional>
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
+#include "System/Threading/Tasks/Task.hpp"
 
 namespace BetterSongList {
     namespace Hooks {
@@ -30,14 +31,20 @@ namespace BetterSongList {
 
             constexpr ISorter() {}
             virtual bool get_isReady() const = 0;
-            virtual void Prepare() = 0;
+            virtual System::Threading::Tasks::Task* Prepare() = 0;
         protected:
             friend class ::BetterSongList::Hooks::HookLevelCollectionTableSet;
     };
 
     class ISorterWithLegend {
         public:
-            using Legend = std::map<std::string, int>;
+            struct LegendPair {
+                LegendPair(const std::string& str, const int& num) : first(str), second(num) {}
+                std::string first;
+                int second;
+            };
+            
+            using Legend = std::vector<LegendPair>;
             constexpr ISorterWithLegend() {};
             virtual Legend BuildLegend(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> levels) const = 0;
     };

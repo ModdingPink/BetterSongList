@@ -21,9 +21,12 @@
 #include "GlobalNamespace/LevelCollectionTableView.hpp"
 #include "GlobalNamespace/SharedCoroutineStarter.hpp"
 #include "UnityEngine/WaitForSeconds.hpp"
+#include "HMUI/SimpleTextDropdown.hpp"
 
 #include "cpp-semver/shared/cpp-semver.hpp"
 #include <algorithm>
+
+#include "bsml/shared/Helpers/utilities.hpp"
 
 DEFINE_TYPE(BetterSongList, FilterUI);
 
@@ -36,18 +39,20 @@ namespace BetterSongList {
     std::map<std::string, BetterSongList::IFilter*> FilterUI::filterOptions;
 
     void FilterUI::ctor() {
-        sortOptionsList = List<Il2CppObject*>::New_ctor();
-        filterOptionsList = List<Il2CppObject*>::New_ctor();
+        sortOptionsList = List<StringW>::New_ctor();
+        filterOptionsList = List<StringW>::New_ctor();
     }
     
     void FilterUI::UpdateDropdowns() {
         DEBUG("FilterUI::UpdateDropdowns");
         if (sortDropDown && sortDropDown->m_CachedPtr.m_value) {
             sortDropDown->ReloadData();
+            //reinterpret_cast<HMUI::SimpleTextDropdown*>(sortDropDown)->SetTexts(sortOptionsList->i_IReadOnlyList_1_T());
             HackDropdown(sortDropDown);
         }
         if (filterDropDown && filterDropDown->m_CachedPtr.m_value) {
             filterDropDown->ReloadData();
+            //reinterpret_cast<HMUI::SimpleTextDropdown*>(filterDropDown)->SetTexts(filterOptionsList->i_IReadOnlyList_1_T());
             HackDropdown(filterDropDown);
         }
 
@@ -72,7 +77,7 @@ namespace BetterSongList {
         auto ml = HookLevelCollectionTableSet::get_lastOutMapList();
         if (!ml) ml = HookLevelCollectionTableSet::get_lastInMapList();
 
-        if (ml.size() < 2) return;
+        if (!ml || ml.size() < 2) return;
 
         // random between 0 - 1, multiply by size - 1 -> random between 0 and size (exclusive max)
         int randomIdx = Sombrero::RandomFast::randomNumber() * (float)(ml.size() - 1);
@@ -157,6 +162,7 @@ namespace BetterSongList {
         
         DEBUG("Got {} filters", filterOptions.size());
         auto& filterOptionsList = instance->filterOptionsList;
+        filterOptionsList->Clear();
         for (const auto& [key, value] : filterOptions) filterOptionsList->Add(StringW(key));
     }
 
@@ -252,6 +258,7 @@ namespace BetterSongList {
 
         if (config.sortAsc != ascending) {
             config.sortAsc = ascending;
+            SaveConfig();
             RestoreTableScroll::ResetScroll();
             if (refresh)
                 HookLevelCollectionTableSet::Refresh();
@@ -259,7 +266,9 @@ namespace BetterSongList {
 
 		auto sortDirection = get_instance()->sortDirection;
         if (sortDirection && sortDirection->m_CachedPtr.m_value) {
-            sortDirection->SetText(ascending ? "▲" : "▼");
+            BSML::Utilities::SetImage(sortDirection, ascending ? "BetterSongList_carat_up" : "BetterSongList_carat_down");
+        } else {
+            ERROR("Sort direction image not set");
         }
     }
 

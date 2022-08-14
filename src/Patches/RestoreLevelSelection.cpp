@@ -19,7 +19,14 @@
 #include "songloader/include/Utils/FindComponentsUtils.hpp"
 
 namespace BetterSongList::Hooks {
+    std::string RestoreLevelSelection::restoredPackId;
+    SafePtr<GlobalNamespace::BeatmapLevelPack> RestoreLevelSelection::restoredPack;
+
     void RestoreLevelSelection::LevelSelectionFlowCoordinator_DidActivate_Prefix(GlobalNamespace::LevelSelectionFlowCoordinator::State*& startState) {
+        auto startPack = startState ? startState->beatmapLevelPack : nullptr;
+        auto startPackId = startPack ? startPack->get_packID() : nullptr;
+        restoredPackId = startPackId ? static_cast<std::string>(startPackId) : "";
+        
         if (startState) {
             return;
         }
@@ -30,35 +37,52 @@ namespace BetterSongList::Hooks {
 
         if (!restoreLevel.empty()) {
             auto bm = RuntimeSongLoader::FindComponentsUtils::GetBeatmapLevelsModel();
-            auto packCollection = bm->get_allLoadedBeatmapLevelPackCollection();
-            auto packs = packCollection->get_beatmapLevelPacks();
+            auto levels = bm->loadedPreviewBeatmapLevels;
 
-            for (auto pack : packs) {
-                auto levelCollection = pack->i_IAnnotatedBeatmapLevelCollection()->get_beatmapLevelCollection();
-                ListWrapper<GlobalNamespace::IPreviewBeatmapLevel*> levels{levelCollection->get_beatmapLevels()};
-                for (auto level : levels) {
-                    if (level->get_levelID() != restoreLevel) {
-                        continue;
-                    }
-                    m = level;
-                    break;
-                }
-            }
+            levels->TryGetValue(restoreLevel, byref(m));
         }
+        
+        LoadPackFromCollectionName();
 
-        auto lastPack = PlaylistUtils::GetPack(config.lastPack);
         startState = GlobalNamespace::LevelSelectionFlowCoordinator::State::New_ctor(
             System::Nullable_1<LevelCategory>(restoreCategory, true),
-            GlobalNamespace::BeatmapLevelPack::New_ctor(
-                lastPack ? lastPack->get_packID() : nullptr,
-                nullptr,
-                nullptr,
-                nullptr,
-                nullptr,
-                nullptr
-            )->i_IBeatmapLevelPack(),
+            restoredPack ? restoredPack->i_IBeatmapLevelPack() : nullptr,
             m,
             nullptr
         );
+    }
+
+    void RestoreLevelSelection::LoadPackFromCollectionName() {
+        INFO("Loading pack from name");
+        if (restoredPack) {
+            auto shortPackName = restoredPack->get_shortPackName();
+            if (shortPackName && shortPackName == config.lastPack) {
+                return;
+            }
+        }
+
+        if (config.lastPack.empty()) {
+            restoredPack.emplace(nullptr);
+            return;
+        }
+
+        auto pack = PlaylistUtils::GetPack(config.lastPack);
+        auto packId = pack ? pack->get_packID() : nullptr;
+
+        restoredPack.emplace(GlobalNamespace::BeatmapLevelPack::New_ctor(
+            packId,
+            nullptr,
+            config.lastPack,
+            nullptr,
+            nullptr,
+            nullptr
+        ));
+    }
+
+    void RestoreLevelSelection::LevelFilteringNavigationController_ShowPacksInSecondChildController_Prefix(StringW& levelPackIdToBeSelectedAfterPresent) {
+        if (levelPackIdToBeSelectedAfterPresent) return;
+        LoadPackFromCollectionName();
+
+        levelPackIdToBeSelectedAfterPresent = restoredPack ? restoredPack->get_packID() : nullptr;
     }
 }

@@ -12,6 +12,6 @@ namespace BetterSongList::SongDetails {
     
     bool CheckAvailable();
     std::string GetUnavailabilityReason();
-    custom_types::Helpers::Coroutine TryGet(std::function<void()> onFinished = nullptr);
     const std::vector<const SDC_wrapper::BeatStarSong*>& get_songDetails();
+    void Init();
 }
