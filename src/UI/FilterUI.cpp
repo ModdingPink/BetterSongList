@@ -241,7 +241,7 @@ namespace BetterSongList {
 
         auto instance = get_instance();
         if (unavCheck && !reason.empty()) {
-            instance->ShowErrorASAP(fmt::format("Can't filter by {} - ", selected, reason));    
+            instance->ShowErrorASAP(fmt::format("Can't filter by {} - {}", selected, reason));    
 			SetFilter("", false, false);
             return;
         }

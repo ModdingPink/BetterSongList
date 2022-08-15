@@ -29,10 +29,8 @@ namespace BetterSongList::SongDetails {
     }
 
     std::string GetUnavailabilityReason() {
-        if (!finishedInitAttempt) {
-            return "Initialization is not complete";
-        } else if (songDetails.size() == 0) {
-            return "Could not find any songs";
+        if (finishedInitAttempt && songDetails.size() == 0) {
+            return "Initialization failed";
         }
         return "";
     }
