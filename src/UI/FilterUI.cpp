@@ -124,8 +124,6 @@ namespace BetterSongList {
 
 		UpdateDropdowns();
 		SetSortDirection(config.get_sortAsc(), false);
-
-		GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(PossiblyDrawUserAttentionToSettingsButton()));
     }
 
     static bool CheckIsVisible(ITransformerPlugin* plugin) {
@@ -346,24 +344,6 @@ namespace BetterSongList {
         }
 
 		warningLoadInProgress = false;
-        co_return;
-    }
-
-    custom_types::Helpers::Coroutine FilterUI::PossiblyDrawUserAttentionToSettingsButton() {
-        std::string v{config.get_settingsSeenInVersion()};
-        bool valid = semver::valid(v);
-        if (valid && semver::gte(v, VERSION)) co_return;
-
-        while (!settingsWereOpened) {
-            co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.5f));
-            if (settingsButton && settingsButton->m_CachedPtr.m_value)
-                settingsButton->set_color({0, 1, 0, 1});
-
-
-            co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.5f));
-            if (settingsButton && settingsButton->m_CachedPtr.m_value)
-                settingsButton->set_color({1, 1, 1, 1});
-        }
         co_return;
     }
 

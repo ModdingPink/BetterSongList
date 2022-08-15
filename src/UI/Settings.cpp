@@ -27,6 +27,7 @@ namespace BetterSongList {
     void Settings::OpenSponsorModal() {
         SettingsClosed();
         sponsorModal->Show();
+        // TODO: sponsor text
     }
     
     void Settings::SettingsClosed() {
