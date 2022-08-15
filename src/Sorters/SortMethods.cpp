@@ -11,10 +11,10 @@
 namespace BetterSongList {
     static ComparableFunctionSorterWithLegend alphabeticalSongname(
         [](auto a, auto b) -> int {
-            return static_cast<std::u16string_view>(a->get_songName()).compare(static_cast<std::u16string_view>(b->get_songName()));
-        }, 
-        [](auto song) -> std::string {
-            std::string songName{song->get_songName()};
+            return static_cast<std::u16string_view>(a->get_songName()) < (static_cast<std::u16string_view>(b->get_songName()));
+        },
+        [](GlobalNamespace::IPreviewBeatmapLevel* song) -> std::string {
+            std::string songName{static_cast<std::string>(song->get_songName())};
             return songName.size() > 0 ? songName.substr(0, 1) : "";
         }
     );
@@ -30,10 +30,10 @@ namespace BetterSongList {
 
     static ComparableFunctionSorterWithLegend alphabeticalMapper(
         [](auto a, auto b) -> int {
-            return static_cast<std::u16string_view>(a->get_levelAuthorName()).compare(static_cast<std::u16string_view>(b->get_levelAuthorName()));
+            return static_cast<std::u16string_view>(a->get_levelAuthorName()) < (static_cast<std::u16string_view>(b->get_levelAuthorName()));
         }, 
         [](auto song) -> std::string {
-            std::string levelAuthor{song->get_levelAuthorName()};
+            std::string levelAuthor{static_cast<std::string>(song->get_levelAuthorName())};
             return levelAuthor.size() > 0 ? levelAuthor.substr(0, 1) : "";
         }
     );
@@ -41,31 +41,16 @@ namespace BetterSongList {
     static FolderDateSorter downloadTime{};
 
     static std::optional<float> StarsProcessor(const SDC_wrapper::BeatStarSong* song) {
-        auto diffs = song->GetDifficultyVector();
-        float ret = 0;
-        for (auto diff : diffs) {
-            if (!diff->ranked) continue;
-            if (diff->stars == 0) continue;
-            if (ret == 0) {
-                ret = diff->stars;
-            }
-
-            if (config.sortAsc) {
-                if (ret < diff->stars) continue;
-            } else if (ret > diff->stars) continue;
-
-            ret = diff->stars;
-        }
-
+        float ret = config.get_sortAsc() ? song->GetMinStarValue() : song->GetMaxStarValue();
         if (ret == 0) return std::nullopt;
         return ret;
     }
 
     static BasicSongDetailsSorterWithLegend stars(
-        StarsProcessor,
+        [](auto song){ return StarsProcessor(song); },
         [](auto song) -> std::string {
             auto y = StarsProcessor(song);
-            if (y == std::nullopt) return "";
+            if (!y.has_value()) return "N/A";
 
             return fmt::format("{:.1f}", y.value());
         }
@@ -111,9 +96,8 @@ namespace BetterSongList {
             ERROR("Name of the Transformer can not be more than 20 characters!");
         }
 
-        if (!config.allowPluginSortsAndFilters) return false;
-        // TODO: check if this even works lol
-        name = "🔌" + name;
+        if (!config.get_allowPluginSortsAndFilters()) return false;
+        name = "P " + name;
 
         auto itr = methods.find(name);
         if (itr != methods.end()) {
@@ -127,6 +111,7 @@ namespace BetterSongList {
 
     std::map<std::string, ISorter*> SortMethods::methods{
 		{"Song Name", &alphabeticalSongname},
+		{"Mapper Name", &alphabeticalMapper},
 		{"Download Date", &downloadTime},
 		{"Ranked Stars", &stars},
 		{"Song Length", &songLength},

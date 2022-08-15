@@ -26,13 +26,13 @@ namespace BetterSongList::Hooks {
         auto startPack = startState ? startState->beatmapLevelPack : nullptr;
         auto startPackId = startPack ? startPack->get_packID() : nullptr;
         restoredPackId = startPackId ? static_cast<std::string>(startPackId) : "";
-        
         if (startState) {
             return;
         }
 
-        auto restoreCategory = config.lastCategory;
-        auto restoreLevel = config.lastSong;
+        INFO("restored Pack Id: {}", restoredPackId);
+        auto restoreCategory = config.get_lastCategory();
+        auto& restoreLevel = config.get_lastSong();
         GlobalNamespace::IPreviewBeatmapLevel* m = nullptr;
 
         if (!restoreLevel.empty()) {
@@ -56,23 +56,25 @@ namespace BetterSongList::Hooks {
         INFO("Loading pack from name");
         if (restoredPack) {
             auto shortPackName = restoredPack->get_shortPackName();
-            if (shortPackName && shortPackName == config.lastPack) {
+            if (shortPackName && shortPackName == config.get_lastPack()) {
                 return;
             }
         }
 
-        if (config.lastPack.empty()) {
+        if (config.get_lastPack().empty()) {
             restoredPack.emplace(nullptr);
+            INFO("Config lastpack was empty");
             return;
         }
 
-        auto pack = PlaylistUtils::GetPack(config.lastPack);
+        auto pack = PlaylistUtils::GetPack(config.get_lastPack());
+        INFO("Got Pack from playlistUtil: {}", fmt::ptr(pack));
         auto packId = pack ? pack->get_packID() : nullptr;
 
         restoredPack.emplace(GlobalNamespace::BeatmapLevelPack::New_ctor(
             packId,
             nullptr,
-            config.lastPack,
+            config.get_lastPack(),
             nullptr,
             nullptr,
             nullptr

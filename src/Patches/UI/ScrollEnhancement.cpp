@@ -37,7 +37,7 @@ void Scroll(HMUI::TableView* table) {
 }
 
 namespace BetterSongList::Hooks {
-    SafePtr<Array<UnityEngine::GameObject*>> ScrollEnhancement::buttons;
+    std::array<SafePtrUnity<UnityEngine::GameObject>, 4> ScrollEnhancement::buttons;
 
     void ScrollEnhancement::LevelCollectionTableView_Init_Prefix(GlobalNamespace::LevelCollectionTableView* self, bool isInitialized, HMUI::TableView* tableView) {
         INFO("ScrollEnhancement::LevelCollectionTableView_Init_Prefix({}, {}, {})", fmt::ptr(self), isInitialized, fmt::ptr(tableView));
@@ -48,11 +48,9 @@ namespace BetterSongList::Hooks {
     }
 
     void ScrollEnhancement::UpdateState() {
-        if (!buttons) return;
-        ArrayW<UnityEngine::GameObject*> btns{buttons.ptr()};
-        for (auto btn : btns) {
-            if (btn && btn->m_CachedPtr.m_value) {
-                btn->SetActive(config.extendSongScrollbar);
+        for (auto btn : buttons) {
+            if (btn) {
+                btn->SetActive(config.get_extendSongScrollbar());
             }
         }
     }
@@ -107,14 +105,10 @@ namespace BetterSongList::Hooks {
         auto btnUpFast = BuildButton(button, MOD_ID "_double_arrow", 0, -90, [table](){Scroll<FloatLiteral(0.1f), -1>(table);});
         auto btnDownFast = BuildButton(button, MOD_ID "_double_arrow", 0.86f, 90, [table](){Scroll<FloatLiteral(0.1f), 1>(table);});
 
-        auto btnArr = ArrayW<UnityEngine::GameObject*>(il2cpp_array_size_t(4));
-        btnArr[0] = btnUpFast->get_gameObject();
-        btnArr[1] = BuildButton(button, "#HeightIcon", 0.09f, 0, [table](){Scroll<FloatLiteral(1.0f), 0>(table);})->get_gameObject();
-        btnArr[2] = BuildButton(button, "#HeightIcon", 0.77f, 180, [table](){Scroll<FloatLiteral(1.0f), 1>(table);})->get_gameObject();
-        btnArr[3] = btnDownFast->get_gameObject();
-
-        buttons.emplace(static_cast<Array<UnityEngine::GameObject*>*>(btnArr));
-
+        buttons[0] = btnUpFast->get_gameObject();
+        buttons[1] = BuildButton(button, "#HeightIcon", 0.09f, 0, [table](){Scroll<FloatLiteral(1.0f), 0>(table);})->get_gameObject();
+        buttons[2] = BuildButton(button, "#HeightIcon", 0.77f, 180, [table](){Scroll<FloatLiteral(1.0f), 1>(table);})->get_gameObject();
+        buttons[3] = btnDownFast->get_gameObject();
         co_yield nullptr;
         UpdateState();
     }

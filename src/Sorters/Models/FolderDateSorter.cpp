@@ -11,13 +11,14 @@
 #include "songloader/include/CustomTypes/SongLoader.hpp" 
 #include "songloader/include/Utils/FindComponentsUtils.hpp"
 
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+
 #include <sys/stat.h>
 #include <time.h>
 
 static const float MONTH_SECS = 1.0f / (60 * 60 * 24 * 30.4f);
 
 namespace BetterSongList {
-    SafePtr<System::Threading::Tasks::TaskCompletionSource_1<bool>> FolderDateSorter::loadingTask;
     std::map<std::string, int> FolderDateSorter::songTimes;
 
     bool FolderDateSorter::isLoading = false;
@@ -28,7 +29,7 @@ namespace BetterSongList {
         return !songTimes.empty();
     }
 
-    System::Threading::Tasks::Task* FolderDateSorter::Prepare() {
+    std::future<void> FolderDateSorter::Prepare() {
         return Prepare(false);
     }
 
@@ -39,57 +40,51 @@ namespace BetterSongList {
     void FolderDateSorter::GatherFolderInfoThread(bool fullReload) {
         std::string fpath = "/info.dat";
 
-        auto beatmapLevelsModel = RuntimeSongLoader::FindComponentsUtils::GetBeatmapLevelsModel();
-        auto collections = beatmapLevelsModel->get_allLoadedBeatmapLevelPackCollection();
-        auto packs = collections->get_beatmapLevelPacks();
+        GlobalNamespace::BeatmapLevelsModel* beatmapLevelsModel = nullptr; 
+        // dispatch getting this thing on main thread
+        QuestUI::MainThreadScheduler::Schedule([&beatmapLevelsModel](){
+            // captured by reference so that's pogger
+            beatmapLevelsModel = RuntimeSongLoader::FindComponentsUtils::GetBeatmapLevelsModel();
+            if (!beatmapLevelsModel) {
+                ERROR("Oh fuck we could not get beatmapLevelsModel: {}", fmt::ptr(beatmapLevelsModel));
+            }
+        });
 
-        for (auto pack : packs) {
-            auto customPack = il2cpp_utils::try_cast<RuntimeSongLoader::SongLoaderCustomBeatmapLevelPack>(pack).value_or(nullptr);
-            if (!customPack) continue;
-            auto collection = customPack->CustomLevelsCollection;
-            ListWrapper<GlobalNamespace::IPreviewBeatmapLevel*> levels{collection->get_beatmapLevels()};
-            for (auto level : levels) {
-                auto customLevel = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(level).value_or(nullptr);
-                if (customLevel) {
-                    std::string levelID = customLevel->get_levelID();
-                    auto itr = songTimes.find(levelID);
-                    if (itr != songTimes.end() && !fullReload) continue;
-                    
-                    struct stat fileStat = {0};
-                    std::string filePath = customLevel->get_customLevelPath() + fpath;
-                    if (stat(filePath.c_str(), &fileStat) == 0) {
-                        songTimes[levelID] = fileStat.st_ctim.tv_sec;
-                    }
+        // wait for it to be set
+        while (!beatmapLevelsModel) std::this_thread::yield();
+        
+        auto dict = beatmapLevelsModel->loadedPreviewBeatmapLevels;
+        auto enumerator = dict->GetEnumerator();
+        while(enumerator.MoveNext()) {
+            auto level = enumerator.get_Current();
+            auto customLevel = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(level.get_Value()).value_or(nullptr);
+            if (customLevel) {
+                std::string levelID = customLevel->get_levelID();
+                auto itr = songTimes.find(levelID);
+                if (itr != songTimes.end() && !fullReload) continue;
+
+                struct stat fileStat = {0};
+                std::string filePath = customLevel->get_customLevelPath() + fpath;
+                if (stat(filePath.c_str(), &fileStat) == 0) {
+                    songTimes[levelID] = fileStat.st_ctim.tv_sec;
                 }
             }
         }
 
-        loadingTask->TrySetResult(true);
-		loadingTask.emplace(nullptr);
         isLoading = false;
     }
 
-    System::Threading::Tasks::Task* FolderDateSorter::Prepare(bool fullReload) {
-        if (songTimes.empty()) {
-            RuntimeSongLoader::API::AddSongsLoadedEvent(std::bind(&FolderDateSorter::OnSongsLoaded, this, std::placeholders::_1));
+    std::future<void> FolderDateSorter::Prepare(bool fullReload) {
+        if (isLoading) {
+            return std::async(std::launch::deferred, []{});
         }
-
-        if (!loadingTask) {
-            loadingTask = System::Threading::Tasks::TaskCompletionSource_1<bool>::New_ctor();
-        }
-
-        auto loader = RuntimeSongLoader::SongLoader::GetInstance();
-
-        if (!loader->HasLoaded || loader->IsLoading) {
-            return reinterpret_cast<System::Threading::Tasks::Task*>(loadingTask->get_Task());
-        }
-
-        if (!isLoading) {
-            isLoading = true;
-            std::thread(std::bind(&FolderDateSorter::GatherFolderInfoThread, this, fullReload)).detach();
-        }
-
-        return reinterpret_cast<System::Threading::Tasks::Task*>(loadingTask->get_Task());
+        isLoading = true;
+        return std::async(std::launch::async, [fullReload, this](){
+            auto loader = RuntimeSongLoader::SongLoader::GetInstance();
+            while(!loader->HasLoaded || loader->IsLoading) std::this_thread::yield();
+            
+            this->FolderDateSorter::GatherFolderInfoThread(fullReload);
+        });
     }
 
     std::optional<float> FolderDateSorter::GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) const {

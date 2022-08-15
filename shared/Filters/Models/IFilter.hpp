@@ -2,6 +2,7 @@
 
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
 #include "System/Threading/Tasks/Task.hpp"
+#include <future>
 
 namespace BetterSongList {
     class IFilter {
@@ -23,7 +24,7 @@ namespace BetterSongList {
             }
 
             virtual bool get_isReady() const = 0;
-            virtual System::Threading::Tasks::Task* Prepare() = 0;
+            virtual std::future<void> Prepare() = 0;
             virtual bool GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) = 0;
     };
 }

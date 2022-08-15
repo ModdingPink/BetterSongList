@@ -8,7 +8,6 @@
 #include "Utils/BeatmapUtils.hpp"
 
 namespace BetterSongList {
-    SafePtr<System::Threading::Tasks::TaskCompletionSource_1<bool>> RequirementsFilter::loadingTask;
     bool RequirementsFilter::inited = false;
 
     RequirementsFilter::RequirementsFilter() 
@@ -18,20 +17,11 @@ namespace BetterSongList {
         return RuntimeSongLoader::SongLoader::GetInstance()->HasLoaded;
     }
 
-    void RequirementsFilter::SongsLoadedCallback(std::vector<GlobalNamespace::CustomPreviewBeatmapLevel*> const& songs) {
-        /* don't quite understand what to do here tbh */
-        loadingTask->SetResult(true);
-    }
-
-    System::Threading::Tasks::Task* RequirementsFilter::Prepare() {
-        if (!loadingTask || loadingTask->get_Task()->get_IsCompleted()) {
-            loadingTask = System::Threading::Tasks::TaskCompletionSource_1<bool>::New_ctor();
-        }
-        if (!inited && (inited = true)) {
-            RuntimeSongLoader::API::AddSongsLoadedEvent(std::bind(&RequirementsFilter::SongsLoadedCallback, this, std::placeholders::_1));
-        }
-
-        return reinterpret_cast<System::Threading::Tasks::Task*>(loadingTask->get_Task());
+    std::future<void> RequirementsFilter::Prepare() {
+        return std::async(std::launch::async, [this](){
+            auto loader = RuntimeSongLoader::SongLoader::GetInstance();
+            while (!loader->HasLoaded) std::this_thread::yield();
+        });
     }
 
     bool RequirementsFilter::GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) {

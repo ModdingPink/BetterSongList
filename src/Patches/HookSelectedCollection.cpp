@@ -19,8 +19,10 @@ namespace BetterSongList::Hooks {
     // same as CollectionSet
     void HookSelectedCollection::AnnotatedBeatmapLevelCollectionsViewController_HandleDidSelectAnnotatedBeatmapLevelCollection_Prefix(GlobalNamespace::IAnnotatedBeatmapLevelCollection* beatmapLevelCollection) {
         if (beatmapLevelCollection) {
+            INFO("Setting last selected pack");
             auto name = beatmapLevelCollection->get_collectionName();
-            config.lastPack = name ? static_cast<std::string>(name) : "";
+            config.set_lastPack(name ? static_cast<std::string>(name) : "");
+            INFO("It is now '{}'", config.get_lastPack());
         }
 
         WARNING("AnnotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(): {0}", beatmapLevelCollection ? beatmapLevelCollection->get_collectionName() : "NULL");
@@ -30,12 +32,12 @@ namespace BetterSongList::Hooks {
         auto pack = actualPack ? actualPack->i_IBeatmapLevelPack()->i_IAnnotatedBeatmapLevelCollection() : nullptr;
 
         auto instance = FilterUI::get_instance();
-        if (beatmapLevelCollection && config.clearFiltersOnPlaylistSelect && beatmapLevelCollection != pack) {
+        if (beatmapLevelCollection && config.get_clearFiltersOnPlaylistSelect() && beatmapLevelCollection != pack) {
             instance->SetSort("", false, false);
             instance->SetFilter("", false, false);
         } else if (lastSelectedCollection) {
-            instance->SetSort(config.lastSort, false, false);
-            instance->SetFilter(config.lastFilter, false, false);
+            instance->SetSort(config.get_lastSort(), false, false);
+            instance->SetFilter(config.get_lastFilter(), false, false);
         }
 
         lastSelectedCollection.emplace(beatmapLevelCollection);

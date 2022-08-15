@@ -6,8 +6,6 @@
 #include "Utils/SongListLegendBuilder.hpp"
 
 namespace BetterSongList {
-    SafePtr<System::Threading::Tasks::TaskCompletionSource_1<bool>> BasicSongDetailsSorterWithLegend::loadingTask;
-    
     BasicSongDetailsSorterWithLegend::BasicSongDetailsSorterWithLegend(
         BasicSongDetailsSorterWithLegend::ValueGetterFunc sortFunc
     ) : 
@@ -33,22 +31,14 @@ namespace BetterSongList {
         return SongDetails::get_finishedInitAttempt();
     }
 
-    System::Threading::Tasks::Task* BasicSongDetailsSorterWithLegend::Prepare() {
-        if (!get_isReady()) {
-            if (!loadingTask) {
-                loadingTask = System::Threading::Tasks::TaskCompletionSource_1<bool>::New_ctor();
-                std::thread([](){
-                    while(!SongDetails::get_finishedInitAttempt()) {
-                        std::this_thread::yield();
-                    }
+    std::future<void> BasicSongDetailsSorterWithLegend::Prepare() {
+        return std::async(std::launch::async, []{
+            SongDetails::Init();
 
-                    loadingTask->TrySetResult(true);
-                    loadingTask.emplace(nullptr);
-                }).detach();
+            while(!SongDetails::get_finishedInitAttempt()) {
+                std::this_thread::yield();
             }
-            return reinterpret_cast<System::Threading::Tasks::Task*>(loadingTask->get_Task());
-        }
-        return System::Threading::Tasks::Task::get_CompletedTask();
+        });
     }
 
     ISorterWithLegend::Legend BasicSongDetailsSorterWithLegend::BuildLegend(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> levels) const {

@@ -4,7 +4,7 @@
 #include <optional>
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
-#include "System/Threading/Tasks/Task.hpp"
+#include <future>
 
 namespace BetterSongList {
     namespace Hooks {
@@ -31,7 +31,7 @@ namespace BetterSongList {
 
             constexpr ISorter() {}
             virtual bool get_isReady() const = 0;
-            virtual System::Threading::Tasks::Task* Prepare() = 0;
+            virtual std::future<void> Prepare() = 0;
         protected:
             friend class ::BetterSongList::Hooks::HookLevelCollectionTableSet;
     };

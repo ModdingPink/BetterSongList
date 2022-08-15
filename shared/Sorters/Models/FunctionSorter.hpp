@@ -8,7 +8,7 @@ namespace BetterSongList {
             using ValueGetterFunc = std::function<std::optional<float>(GlobalNamespace::IPreviewBeatmapLevel*)>;
             PrimitiveFunctionSorter(const ValueGetterFunc& sortFunc);
             virtual bool get_isReady() const override;
-            virtual System::Threading::Tasks::Task* Prepare() override;
+            virtual std::future<void> Prepare() override;
             virtual std::optional<float> GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) const override;
         private:
             ValueGetterFunc sortValueGetter;
@@ -28,7 +28,7 @@ namespace BetterSongList {
             using CompareFunc = std::function<int(GlobalNamespace::IPreviewBeatmapLevel*, GlobalNamespace::IPreviewBeatmapLevel*)>;
             ComparableFunctionSorter(const CompareFunc& sortFunc);
             virtual bool get_isReady() const override;
-            virtual System::Threading::Tasks::Task* Prepare() override;
+            virtual std::future<void> Prepare() override;
             virtual void DoSort(ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& levels, bool ascending) const override;
             int operator ()(GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) const;
         private:

@@ -1,13 +1,13 @@
 <horizontal id='root' anchor-pos-y='-39' preferred-width='212' horizontal-fit='PreferredSize' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/RedBrumbler/Quest-BSML-Docs/gh-pages/schema.xsd'>
 	<horizontal spacing='5' child-expand-width='false' preferred-width='106'>
 		<horizontal spacing='1' preferred-width='47' child-expand-width='false'>
-			<dropdown-list-setting id='sortDropdown' options='sortOptionsList' text='Sort' on-change='_SetSort' preferred-width='44'/>
+			<dropdown-list-setting id='sortDropDown' options='sortOptionsList' text='Sort' on-change='_SetSort' preferred-width='44'/>
 			<stack>
 				<clickable-image id='sortDirection' src='BetterSongList_carat_down' on-click='ToggleSortDirection' hover-hint='Sort direction (Ascending / Descending)' pref-width='5' pref-height='5' preserve-aspect="true"/>
 			</stack>
 		</horizontal>
 		<horizontal child-expand-width='false' preferred-width='44'>
-			<dropdown-list-setting id='filterDropdown' options='filterOptionsList' text='Filter' on-change='_SetFilter'/>
+			<dropdown-list-setting id='filterDropDown' options='filterOptionsList' text='Filter' on-change='_SetFilter'/>
 		</horizontal>
 	</horizontal>
 	<horizontal child-expand-width='false' spacing='5' preferred-width='106'>
@@ -18,7 +18,7 @@
 	
 	<modal id='incompatibilityModal' clickerino-offerino-closerino='true' move-to-center='true' size-delta-x='70' size-delta-y='45'>
 		<vertical horizontal-fit='Unconstrained' pad='4' pad-top='11'>
-			<horizontal bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='-5'>
+			<horizontal bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='5'>
 				<text text='BetterSongList - UH OH!' align='Center'/>
 			</horizontal>
 			<text text='' align='Center' font-size='3.3' id='failTextLabel' word-wrapping='true'/>

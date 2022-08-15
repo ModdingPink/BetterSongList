@@ -3,7 +3,7 @@
 
 namespace BetterSongList::Hooks {
     bool ImproveBasegameSearch::BeatmapLevelFilterModel_LevelContainsText_Prefix(GlobalNamespace::IPreviewBeatmapLevel* beatmapLevel, ArrayW<StringW>& searchTexts, bool& result) {
-        if (!config.modBasegameSearch) return true;
+        if (!config.get_modBasegameSearch()) return true;
         
         //searchTexts.Any(x => x.Length > 2 && beatmapLevel.levelAuthorName.IndexOf(x, 0, StringComparison.CurrentCultureIgnoreCase) != -1)
         for (auto s : searchTexts) {

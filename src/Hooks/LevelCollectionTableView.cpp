@@ -2,6 +2,7 @@
 #include "logging.hpp"
 
 #include "Patches/RestoreTableScroll.hpp"
+#include "Patches/HookSelectedInTable.hpp"
 #include "Patches/HookLevelCollectionTableSet.hpp"
 #include "Patches/UI/ScrollEnhancement.hpp"
 #include "GlobalNamespace/LevelCollectionTableView.hpp"
@@ -28,4 +29,9 @@ MAKE_AUTO_HOOK_MATCH(LevelCollectionTableView_SetData, &GlobalNamespace::LevelCo
     LevelCollectionTableView_SetData(self, reinterpret_cast<System::Collections::Generic::IReadOnlyList_1<::GlobalNamespace::IPreviewBeatmapLevel*>*>(arr.convert()), favoriteLevelIds, beatmapLevelsAreSorted);
     BetterSongList::Hooks::DoTheFunnySelect::PostFix(self);
     BetterSongList::Hooks::HookLevelCollectionTableSet::PostFix(self, arr);
+}
+// from HookSelectedInTable
+MAKE_AUTO_HOOK_MATCH(LevelCollectionTableView_HandleDidSelectRowEvent, &GlobalNamespace::LevelCollectionTableView::HandleDidSelectRowEvent, void, GlobalNamespace::LevelCollectionTableView* self, ::HMUI::TableView* tableView, int row) {
+    LevelCollectionTableView_HandleDidSelectRowEvent(self, tableView, row);
+    BetterSongList::Hooks::HookSelectedInTable::LevelCollectionTableView_HandleDidSelectRowEvent_Postfix(self->selectedPreviewBeatmapLevel);
 }

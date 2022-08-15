@@ -63,7 +63,7 @@ namespace BetterSongList::Hooks {
     void SongDeleteButton::UpdateState() {
         if (!deleteButton) return;
 
-        deleteButton->set_interactable(lastLevel && (config.allowWipDelete || !get_isWip()));
+        deleteButton->set_interactable(lastLevel && (config.get_allowWipDelete() || !get_isWip()));
     }
 
     bool SongDeleteButton::get_isWip() {

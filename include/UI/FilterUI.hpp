@@ -6,6 +6,7 @@
 #include "bsml/shared/BSML/Components/ClickableText.hpp"
 #include "bsml/shared/BSML/Components/ClickableImage.hpp"
 #include "bsml/shared/BSML/Components/ModalView.hpp"
+#include "bsml/shared/BSML/Components/Settings/DropdownListSetting.hpp"
 #include "UnityEngine/RectTransform.hpp"
 #include "HMUI/DropdownWithTableView.hpp"
 #include "TMPro/TextMeshProUGUI.hpp"
@@ -17,8 +18,8 @@
 
 DECLARE_CLASS_CODEGEN(BetterSongList, FilterUI, Il2CppObject,
     DECLARE_INSTANCE_FIELD(UnityEngine::RectTransform*, root);
-    DECLARE_INSTANCE_FIELD(HMUI::DropdownWithTableView*, sortDropDown);
-    DECLARE_INSTANCE_FIELD(HMUI::DropdownWithTableView*, filterDropDown);
+    DECLARE_INSTANCE_FIELD(BSML::DropdownListSetting*, sortDropDown);
+    DECLARE_INSTANCE_FIELD(BSML::DropdownListSetting*, filterDropDown);
     DECLARE_INSTANCE_FIELD(ListWrapper<StringW>, sortOptionsList);
     DECLARE_INSTANCE_FIELD(ListWrapper<StringW>, filterOptionsList);
     DECLARE_INSTANCE_FIELD(bool, warningLoadInProgress);
@@ -58,7 +59,6 @@ DECLARE_CLASS_CODEGEN(BetterSongList, FilterUI, Il2CppObject,
         static std::map<std::string, BetterSongList::ISorter*> sortOptions;
         static std::map<std::string, BetterSongList::IFilter*> filterOptions;
         
-        std::shared_ptr<BSML::BSMLParser> parser;
         std::queue<std::string> warnings;
 
         custom_types::Helpers::Coroutine _ShowError();

@@ -1,4 +1,5 @@
 #include "UI/FilterUI.hpp"
+#include "UI/Settings.hpp"
 #include "config.hpp"
 #include "assets.hpp"
 #include "logging.hpp"
@@ -46,14 +47,14 @@ namespace BetterSongList {
     void FilterUI::UpdateDropdowns() {
         DEBUG("FilterUI::UpdateDropdowns");
         if (sortDropDown && sortDropDown->m_CachedPtr.m_value) {
-            sortDropDown->ReloadData();
+            sortDropDown->dropdown->ReloadData();
             //reinterpret_cast<HMUI::SimpleTextDropdown*>(sortDropDown)->SetTexts(sortOptionsList->i_IReadOnlyList_1_T());
-            HackDropdown(sortDropDown);
+            HackDropdown(sortDropDown->dropdown);
         }
         if (filterDropDown && filterDropDown->m_CachedPtr.m_value) {
-            filterDropDown->ReloadData();
+            filterDropDown->dropdown->ReloadData();
             //reinterpret_cast<HMUI::SimpleTextDropdown*>(filterDropDown)->SetTexts(filterOptionsList->i_IReadOnlyList_1_T());
-            HackDropdown(filterDropDown);
+            HackDropdown(filterDropDown->dropdown);
         }
 
     }
@@ -66,7 +67,7 @@ namespace BetterSongList {
     void FilterUI::ToggleSortDirection() {
 		if(HookLevelCollectionTableSet::sorter == nullptr)
             return;
-        SetSortDirection(!config.sortAsc);
+        SetSortDirection(!config.get_sortAsc());
     }
 
     void FilterUI::SelectRandom() {
@@ -97,11 +98,12 @@ namespace BetterSongList {
     }
 
     void FilterUI::SettingsOpened() {
-		config.settingsSeenInVersion = VERSION;
+		config.set_settingsSeenInVersion(std::string(VERSION));
 		settingsWereOpened = true;
 
-        // TODO: parsing settings n stuff
-		//BSMLStuff.InitSplitView(ref settingsViewParams, rootTransform.gameObject, SplitViews.Settings.instance).EmitEvent("ShowSettings");
+        auto settings = Settings::get_instance();
+        settings->Init(root);
+        settings->settingsModal->Show();
     }
 
     void FilterUI::PostParse() {
@@ -121,7 +123,7 @@ namespace BetterSongList {
 		}
 
 		UpdateDropdowns();
-		SetSortDirection(config.sortAsc, false);
+		SetSortDirection(config.get_sortAsc(), false);
 
 		GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(PossiblyDrawUserAttentionToSettingsButton()));
     }
@@ -198,7 +200,7 @@ namespace BetterSongList {
 
         if (HookLevelCollectionTableSet::sorter != newSort) {
             if (storeToConfig) {
-                config.lastSort = selected;
+                config.set_lastSort(selected);
             }
 
             HookLevelCollectionTableSet::sorter = newSort;
@@ -209,7 +211,15 @@ namespace BetterSongList {
 
         auto dropDown = instance->sortDropDown;
         if (dropDown && dropDown->m_CachedPtr.m_value) {
-            dropDown->SelectCellWithIdx(instance->sortOptionsList->ToArray()->IndexOf(StringW(selected)));
+            auto sortList = instance->sortOptionsList;
+            auto itr = std::find(sortList.begin(), sortList.end(), selected);
+            if (itr != sortList.end()) {
+                int idx = itr - sortList.begin();
+                INFO("Selecting index: {}", idx);
+                dropDown->dropdown->SelectCellWithIdx(idx);
+            } else {
+                ERROR("Could not find {} in sortList", selected);
+            }
         }
     }
 
@@ -240,7 +250,7 @@ namespace BetterSongList {
 
         if (HookLevelCollectionTableSet::filter != newFilter) {
             if (storeToConfig) {
-                config.lastFilter = selected;
+                config.set_lastFilter(selected);
             }
             HookLevelCollectionTableSet::filter = newFilter;
             RestoreTableScroll::ResetScroll();
@@ -249,16 +259,23 @@ namespace BetterSongList {
 
         auto dropDown = instance->filterDropDown;
         if (dropDown && dropDown->m_CachedPtr.m_value) {
-            dropDown->SelectCellWithIdx(instance->filterOptionsList->ToArray()->IndexOf(StringW(selected)));
+            auto filterList = instance->filterOptionsList;
+            auto itr = std::find(filterList.begin(), filterList.end(), selected);
+            if (itr != filterList.end()) {
+                int idx = itr - filterList.begin();
+                INFO("Selecting index: {}", idx);
+                dropDown->dropdown->SelectCellWithIdx(idx);
+            } else {
+                ERROR("Could not find {} in filterList", selected);
+            }
         }
     }
 
     void FilterUI::SetSortDirection(bool ascending, bool refresh) {
         if (!HookLevelCollectionTableSet::sorter) return;
 
-        if (config.sortAsc != ascending) {
-            config.sortAsc = ascending;
-            SaveConfig();
+        if (config.get_sortAsc() != ascending) {
+            config.set_sortAsc(ascending);
             RestoreTableScroll::ResetScroll();
             if (refresh)
                 HookLevelCollectionTableSet::Refresh();
@@ -275,14 +292,15 @@ namespace BetterSongList {
     void FilterUI::Init() {
         DEBUG("FilterUI::Init");
 		UpdateVisibleTransformers();
-		SetSort(config.lastSort, false, false);
-		SetFilter(config.lastFilter, false, false);
-		SetSortDirection(config.sortAsc);
+		SetSort(config.get_lastSort(), false, false);
+		SetFilter(config.get_lastFilter(), false, false);
+		SetSortDirection(config.get_sortAsc());
     }
 
     void FilterUI::AttachTo(UnityEngine::Transform* target) {
         auto instance = get_instance();
-        instance->parser = BSML::parse_and_construct(IncludedAssets::MainUI_bsml, target, instance);
+        BSML::parse_and_construct(IncludedAssets::MainUI_bsml, target, instance);
+        
         auto root = instance->root;
 		root->set_localScale(root->get_localScale() * 0.7f);
 
@@ -332,8 +350,9 @@ namespace BetterSongList {
     }
 
     custom_types::Helpers::Coroutine FilterUI::PossiblyDrawUserAttentionToSettingsButton() {
-        bool valid = semver::valid(config.settingsSeenInVersion);
-        if (valid && semver::gte(config.settingsSeenInVersion, VERSION)) co_return;
+        std::string v{config.get_settingsSeenInVersion()};
+        bool valid = semver::valid(v);
+        if (valid && semver::gte(v, VERSION)) co_return;
 
         while (!settingsWereOpened) {
             co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForSeconds::New_ctor(0.5f));

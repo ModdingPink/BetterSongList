@@ -33,7 +33,7 @@ MAKE_AUTO_HOOK_FIND_INSTANCE(LevelFilterParams_ctor_args,
             filterByLevelIds,
             beatmapLevelIds,
             searchText,
-            filterByOwned || config.autoFilterUnowned, /* <-this is why we have to hook this ctor*/
+            filterByOwned || config.get_autoFilterUnowned(), /* <-this is why we have to hook this ctor*/
             filterByDifficulty,
             filteredDifficulty,
             filterByCharacteristic,
@@ -55,5 +55,5 @@ MAKE_AUTO_HOOK_FIND_INSTANCE(LevelFilterParams_ctor_0,
     void,
     GlobalNamespace::LevelFilterParams* self) {
         LevelFilterParams_ctor_0(self);
-        self->set_filterByOwned(self->get_filterByOwned() || config.autoFilterUnowned);
+        self->set_filterByOwned(self->get_filterByOwned() || config.get_autoFilterUnowned());
     }

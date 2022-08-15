@@ -10,8 +10,8 @@ namespace BetterSongList {
         return true;
     }
 
-    System::Threading::Tasks::Task* FunctionFilter::Prepare() {
-        return System::Threading::Tasks::Task::get_CompletedTask();
+    std::future<void> FunctionFilter::Prepare() {
+        return std::async(std::launch::deferred, []{});
     }
 
     bool FunctionFilter::GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) { 

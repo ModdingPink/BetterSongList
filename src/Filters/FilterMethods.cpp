@@ -21,7 +21,8 @@ namespace BetterSongList {
     });
 
     static BasicSongDetailsFilter qualified([](const SDC_wrapper::BeatStarSong* x) {
-        // TODO: implement this in sdc?
+        // FIXME: this filter is not gonna be done right now
+        // mostly because the data is not available in SDC and making it available is a not now thing
         return false;
     });
 
@@ -40,9 +41,8 @@ namespace BetterSongList {
             ERROR("Name of the Transformer can not be more than 20 characters!");
         }
 
-        if (!config.allowPluginSortsAndFilters) return false;
-        // TODO: check if this even works lol
-        name = "🔌" + name;
+        if (!config.get_allowPluginSortsAndFilters()) return false;
+        name = "P " + name;
 
         auto itr = methods.find(name);
         if (itr != methods.end()) {
@@ -56,7 +56,6 @@ namespace BetterSongList {
 
     std::map<std::string, IFilter*> FilterMethods::methods{
         {"Ranked", &ranked},
-		{"Qualified", &qualified},
 		{"Unplayed", &unplayed},
 		{"Played", &played},
 		{"Requirements", &requirements},

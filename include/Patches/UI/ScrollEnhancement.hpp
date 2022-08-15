@@ -13,7 +13,7 @@ namespace BetterSongList::Hooks {
         private:
             static UnityEngine::Transform* BuildButton(UnityEngine::Transform* baseButton, StringW Icon, float vOffs, float rotation, std::function<void()> cb);
             static custom_types::Helpers::Coroutine DoTheFunny(HMUI::TableView* table, UnityEngine::Transform* a);
-            static SafePtr<Array<UnityEngine::GameObject*>> buttons;
+            static std::array<SafePtrUnity<UnityEngine::GameObject>, 4> buttons;
             
     };
 }

@@ -63,14 +63,14 @@ namespace BetterSongList::Hooks {
         auto obstaclesText = levelParamsPanel->obstaclesCountText;
         obstaclesText->set_fontStyle(TMPro::FontStyles::Italic);
 
-        if (config.showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun) {
+        if (config.get_showWarningIfMapHasCrouchWallsBecauseMappersThinkSprinklingThemInRandomlyIsFun()) {
             obstaclesText->set_richText(true);
             auto customdiffOpt = il2cpp_utils::try_cast<GlobalNamespace::CustomDifficultyBeatmap>(selectedDifficultyBeatmap);
             if (customdiffOpt.has_value()) {
                 auto obstacles = customdiffOpt.value()->get_beatmapSaveData()->obstacles;
                 if (BeatmapPatternDetection::CheckForCrouchWalls(obstacles)) {
                     obstaclesText->set_fontStyle(TMPro::FontStyles::Normal);
-                    obstaclesText->set_text(fmt::format("<i>{}</i> <b><size=3.3><color=#FF0>⚠</color></size></b>", obstaclesText->get_text()));
+                    obstaclesText->set_text(fmt::format("<i>{}</i> <b><size=3.3><color=#FF0>!</color></size></b>", obstaclesText->get_text()));
                 }
             } else {
                 /* nothing */
@@ -113,7 +113,7 @@ namespace BetterSongList::Hooks {
                         fieldsW[1]->set_text("-");
                     } else {
                         INFO("diff was found and ranked, now to show those values");
-                        auto acc = 0.984f - (std::max(0.0f, (diff->stars - 1.5f) / (12.5f - 1.5f) / config.accuracyMultiplier) * .027f);
+                        auto acc = 0.984f - (std::max(0.0f, (diff->stars - 1.5f) / (12.5f - 1.5f) / config.get_accuracyMultiplier()) * .027f);
 						auto pp = PPUtils::PPPercentage(acc) * diff->stars * 42.1f;
 
                         fieldsW[0]->set_text(fmt::format("{0} <size=2.5>({1:0.0f})</size>", (int)pp, acc));
@@ -134,7 +134,7 @@ namespace BetterSongList::Hooks {
             INFO("Setting njs {}", njs);
             fieldsW[2]->set_text(fmt::format("{:1.1f}", njs));
 
-            if (config.showMapJDInsteadOfOffset) { // map jump distance
+            if (config.get_showMapJDInsteadOfOffset()) { // map jump distance
                 float jumpDistance = BetterSongList::JumpDistanceCalculator::GetJd(selectedDifficultyBeatmap->get_level()->i_IPreviewBeatmapLevel()->get_beatsPerMinute(), njs, selectedDifficultyBeatmap->get_noteJumpStartBeatOffset());
                 fieldsW[3]->set_text(fmt::format("{:1.1f}", jumpDistance));
                 INFO("Setting jumpDistance {}", jumpDistance);

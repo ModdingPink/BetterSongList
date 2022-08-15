@@ -19,7 +19,7 @@ namespace BetterSongList::Hooks {
         }
 
         lastSelectedCategory = self->get_selectedLevelCategory();
-        config.lastCategory = lastSelectedCategory;
+        config.set_lastCategory(lastSelectedCategory);
 
         RestoreTableScroll::ResetScroll();
 

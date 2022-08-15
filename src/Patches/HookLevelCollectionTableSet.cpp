@@ -20,10 +20,14 @@
 #include "GlobalNamespace/AlphabetScrollInfo.hpp"
 #include "GlobalNamespace/AlphabetScrollInfo_Data.hpp"
 
+#include "sombrero/shared/linq_functional.hpp"
+#include "questui/shared/CustomTypes/Components/MainThreadScheduler.hpp"
+
 #include "UI/FilterUI.hpp"
 #include <cxxabi.h>
 #include <sstream>
 #include <future>
+
 
 namespace BetterSongList::Hooks {
     ISorter* HookLevelCollectionTableSet::sorter;
@@ -84,27 +88,13 @@ namespace BetterSongList::Hooks {
 
         DEBUG("FilterWrapper({})", previewBeatmapLevels.size());
         
-        std::vector<GlobalNamespace::IPreviewBeatmapLevel*> out;
+        using namespace Sombrero::Linq::Functional;
         if (filter && filter->get_isReady()) {
             INFO("Filtering levels");
-            // yes this is way too much space, but worst case all levels match the filter
-            // also reserving space beforehand is better than allocating it every push back
-            out.reserve(previewBeatmapLevels.Length());
-            // check every level if they match the current filter
-            for (auto level : previewBeatmapLevels) {
-                if (filter->GetValueFor(level)) {
-                    out.push_back(level);
-                }
-            }
+            previewBeatmapLevels = previewBeatmapLevels | Where([filter = filter](auto x){ return filter->GetValueFor(x); }) | ToArray();
         }
 
-        // if we filtered anything, no filter means no change in contents
-        // also if all levels match the filter, we do not need to make a new array
-        if (!out.empty() && out.size() != previewBeatmapLevels.Length()) {
-            previewBeatmapLevels = ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>(out.size());
-            memcpy(previewBeatmapLevels.begin(), out.data(), out.size());
-        }
-
+        INFO("We're down to {}", previewBeatmapLevels.size());
         if (sorter && sorter->get_isReady()) {
             INFO("Sorting levels!");
             // you say RED WTF IS GOING ON HERE
@@ -118,23 +108,18 @@ namespace BetterSongList::Hooks {
 
             // this checks if the server is an ISorterCustom with rtti
             if (sorter && sorter->as<ISorterCustom*>()) {
-                castedSorter.customSorter->DoSort(previewBeatmapLevels, config.sortAsc);
+                castedSorter.customSorter->DoSort(previewBeatmapLevels, config.get_sortAsc());
             } 
             // this checks if the server is an ISorterPrimitive with rtti
             else if (sorter && sorter->as<ISorterPrimitive*>()) {
-                if (config.sortAsc) {
-                    std::sort(previewBeatmapLevels.begin(), previewBeatmapLevels.end(), 
-                        [primitiveSorter = castedSorter.primitiveSorter](GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
-                            return primitiveSorter->GetValueFor(lhs).value_or(std::numeric_limits<float>::infinity()) <
-                            primitiveSorter->GetValueFor(rhs).value_or(-std::numeric_limits<float>::infinity());
-                    });
-                } else {
-                    std::sort(previewBeatmapLevels.begin(), previewBeatmapLevels.end(), 
-                        [primitiveSorter = castedSorter.primitiveSorter](GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
-                            return primitiveSorter->GetValueFor(rhs).value_or(std::numeric_limits<float>::infinity()) <
-                            primitiveSorter->GetValueFor(lhs).value_or(-std::numeric_limits<float>::infinity());
-                    });
-                }
+                // sorting is the same regardless of ascending or descending, since the way we differentiate between ascending and descending is to just use the reverse iterators if ascending
+                auto sort = [primitiveSorter = castedSorter.primitiveSorter]
+                (GlobalNamespace::IPreviewBeatmapLevel* lhs, GlobalNamespace::IPreviewBeatmapLevel* rhs) -> bool {
+                    return primitiveSorter->GetValueFor(lhs) < primitiveSorter->GetValueFor(rhs);
+                };
+
+                if (config.get_sortAsc()) std::sort(previewBeatmapLevels.rbegin(), previewBeatmapLevels.rend(), sort);
+                else std::sort(previewBeatmapLevels.begin(), previewBeatmapLevels.end(), sort);
             } 
             // if it was neither, print the type name
             else if (sorter) {
@@ -151,62 +136,57 @@ namespace BetterSongList::Hooks {
 
         auto withLegend = sorter ? sorter->as<ISorterWithLegend*>() : nullptr;
         if (withLegend) {
+            INFO("Sorter had legend!");
             customLegend = withLegend->BuildLegend(previewBeatmapLevels);
+            for (auto const& [first, second] : customLegend) {
+                INFO("{} : {}", first, second);
+            }
+        } else {
+            ERROR("Sorter did not have legend!");
         }
 
         INFO("Ended with {} levels in array", previewBeatmapLevels.size());
     }
 
 
-    static SafePtr<System::Threading::CancellationTokenSource> sortCancelSrc;
+    static std::shared_ptr<bool> doCancelSort;
 
     bool HookLevelCollectionTableSet::PrepareStuffIfNecessary(std::function<void()> cb, bool cbOnAlreadyPrepared) {
         INFO("PrepareStuffIfNecessary({}, {})", cb != nullptr, cbOnAlreadyPrepared);
 
-        using namespace System::Threading::Tasks;
         if ((filter && !filter->get_isReady()) || (sorter && !sorter->get_isReady())) {
             auto instance = FilterUI::get_instance();
             auto indicator = instance->filterLoadingIndicator;
             if (indicator && indicator->m_CachedPtr.m_value) {
                 indicator->get_gameObject()->SetActive(true);
             }
-            if (sortCancelSrc) {
-                sortCancelSrc->Cancel();
+
+            if (doCancelSort.use_count()) {
+                doCancelSort.reset();
             }
 
-            sortCancelSrc = System::Threading::CancellationTokenSource::New_ctor();
-            auto thisSrc = sortCancelSrc.ptr();
-
+            doCancelSort = std::make_shared<bool>(false);
             DEBUG("PrepareStuffIfNecessary()");
-            ArrayW<Task*> tasks = ArrayW<Task*>(il2cpp_array_size_t(2));
-            tasks[0] = (sorter && !sorter->get_isReady()) ? sorter->Prepare() : Task::get_CompletedTask();
-            tasks[1] = (filter && !filter->get_isReady()) ? filter->Prepare() : Task::get_CompletedTask();
+            std::thread([cb](std::weak_ptr<bool> thisDoCancelSort){
+                if (sorter && !sorter->get_isReady()) { 
+                    sorter->Prepare().wait();
+                }
 
-            std::function<void(Task*)> fun =
-                [cb, thisSrc](auto task) { 
+                if (filter && !filter->get_isReady()) { 
+                    filter->Prepare().wait();
+                }
 
-                    DEBUG("ContinueWith");
-                    if (sortCancelSrc.ptr() != thisSrc) {
-                        return;
-                    }
+                DEBUG("ContinueWith");
+                if (thisDoCancelSort.expired()) {
+                    INFO("sort was cancelled by invalidated weak_ptr");
+                    return;
+                }
 
-                    sortCancelSrc.emplace(nullptr);
-                    if (!thisSrc->get_IsCancellationRequested() && cb) {
-                        cb();
-                    }
-                };
-
-            System::Action_1<Task*>* continueAction = BSML::MakeSystemAction(fun);
-            System::Threading::StackCrawlMark stackCrawlMark = System::Threading::StackCrawlMark::LookForMyCaller;
-
-            auto task = Task::WhenAll(tasks)->ContinueWith(
-                continueAction,
-                System::Threading::Tasks::TaskScheduler::get_Current(),
-                System::Threading::CancellationToken::get_None(),
-                System::Threading::Tasks::TaskContinuationOptions::OnlyOnRanToCompletion,
-                byref(stackCrawlMark)
-            );
-            task->Execute();
+                if (!*thisDoCancelSort.lock().get() && cb) {
+                    // main thread because cb possibly does main thread things
+                    QuestUI::MainThreadScheduler::Schedule(cb);
+                }
+            }, doCancelSort).detach();
 
             return true;
         } else {
@@ -219,8 +199,8 @@ namespace BetterSongList::Hooks {
 
     void HookLevelCollectionTableSet::Prefix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& previewBeatmapLevels, HashSet<StringW>* favoriteLevelIds, bool& beatmapLevelsAreSorted) {
         DEBUG("LevelCollectionTableView.SetData() : Prefix");
-        if (lastInMapList && previewBeatmapLevels.convert() == lastInMapList.ptr()) {
-            DEBUG("LevelCollectionTableView.SetData() : Prefix -> levels = lastout because lastin == levels");
+        if (lastInMapList && previewBeatmapLevels.convert() == lastInMapList.ptr() && lastOutMapList) {
+            DEBUG("LevelCollectionTableView.SetData() : Prefix -> levels = lastout because {} == {}", fmt::ptr(previewBeatmapLevels.convert()), fmt::ptr(lastInMapList.ptr()));
             previewBeatmapLevels = lastOutMapList.ptr();
             return;
         }
@@ -251,7 +231,7 @@ namespace BetterSongList::Hooks {
         if (PrepareStuffIfNecessary([](){Refresh(true);})) {
             DEBUG("Stuff isnt ready yet... Preparing it and then reloading list: Sorter {0}, Filter {1}", !sorter || sorter->get_isReady(), !filter || filter->get_isReady());
         }
-        
+
         auto instance = FilterUI::get_instance();
         auto loadingIndicator = instance->filterLoadingIndicator;
         if (loadingIndicator && loadingIndicator->m_CachedPtr.m_value) {
@@ -269,6 +249,7 @@ namespace BetterSongList::Hooks {
     }
 
     void HookLevelCollectionTableSet::PostFix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> previewBeatmapLevels) {
+        lastOutMapList.emplace(static_cast<Array<GlobalNamespace::IPreviewBeatmapLevel*>*>(previewBeatmapLevels));
         DEBUG("HookLevelCollectionTableSet::PostFix({}, {})", fmt::ptr(self), previewBeatmapLevels.size());
         if (customLegend.empty()) return;
         auto alphabetScrollBar = self->alphabetScrollbar;
