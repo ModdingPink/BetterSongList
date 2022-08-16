@@ -17,19 +17,12 @@
 #include "HMUI/TableView_ScrollPositionType.hpp"
 #include "HMUI/NoTransitionsButton.hpp"
 
-struct FloatLiteral {
-    constexpr FloatLiteral(const float& a) : v(a) {};
-    constexpr operator float() const { return v; }
-    float v;
-};
-
-template<FloatLiteral step, int direction>
-void Scroll(HMUI::TableView* table) {
+void Scroll(HMUI::TableView* table, float step, int direction) {
     auto cells = table->get_dataSource()->NumberOfCells();
     if (cells == 0) return;
-    int amt = (float)cells * step * (float)direction;
+    float amt = (float)cells * step * (float)direction;
 
-    if constexpr ((step - 1) > 0.001f) {
+    if (step != 1) {
         amt += table->GetVisibleCellsIdRange()->get_Item1();
     }
 
@@ -102,12 +95,12 @@ namespace BetterSongList::Hooks {
         static ConstString btnPath{"ScrollBar/UpButton"};
         auto button = a->Find(btnPath);
 
-        auto btnUpFast = BuildButton(button, MOD_ID "_double_arrow", 0, -90, [table](){Scroll<FloatLiteral(0.1f), -1>(table);});
-        auto btnDownFast = BuildButton(button, MOD_ID "_double_arrow", 0.86f, 90, [table](){Scroll<FloatLiteral(0.1f), 1>(table);});
+        auto btnUpFast = BuildButton(button, MOD_ID "_double_arrow", 0, -90, [table](){Scroll(table, 0.1f, -1);});
+        auto btnDownFast = BuildButton(button, MOD_ID "_double_arrow", 0.86f, 90, [table](){Scroll(table, 0.1f, 1);});
 
         buttons[0] = btnUpFast->get_gameObject();
-        buttons[1] = BuildButton(button, "#HeightIcon", 0.09f, 0, [table](){Scroll<FloatLiteral(1.0f), 0>(table);})->get_gameObject();
-        buttons[2] = BuildButton(button, "#HeightIcon", 0.77f, 180, [table](){Scroll<FloatLiteral(1.0f), 1>(table);})->get_gameObject();
+        buttons[1] = BuildButton(button, "#HeightIcon", 0.09f, 0, [table](){Scroll(table, 1.0f, 0);})->get_gameObject();
+        buttons[2] = BuildButton(button, "#HeightIcon", 0.77f, 180, [table](){Scroll(table, 1.0f, 1);})->get_gameObject();
         buttons[3] = btnDownFast->get_gameObject();
         co_yield nullptr;
         UpdateState();
