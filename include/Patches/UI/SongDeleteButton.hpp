@@ -7,9 +7,11 @@
 #include "GlobalNamespace/CustomPreviewBeatmapLevel.hpp"
 #include "UnityEngine/UI/Button.hpp"
 
+/* kinda unused at the moment */
 namespace BetterSongList::Hooks {
     class SongDeleteButton {
         public:
+            /// @brief no prio
             static void StandardLevelDetailView_RefreshContent_Postfix(GlobalNamespace::StandardLevelDetailView* self, UnityEngine::UI::Button* practiceButton, GlobalNamespace::IPreviewBeatmapLevel* level);
             static void UpdateState();
             static bool get_isWip();

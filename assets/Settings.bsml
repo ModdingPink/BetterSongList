@@ -1,7 +1,7 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/RedBrumbler/Quest-BSML-Docs/gh-pages/schema.xsd'>
 	<modal id='settingsModal' move-to-center='true' size-delta-x='80' size-delta-y='75'>
 		<vertical horizontal-fit='Unconstrained' pad='4' pad-top='9'>
-			<horizontal id='settingsTitle' bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='0'>
+			<horizontal id='settingsTitle' bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='-5'>
 				<text text='BetterSongList - Settings' align='Center'/>
 			</horizontal>
 			<vertical horizontal-fit='Unconstrained' preferred-height='80' child-expand-height='false'>

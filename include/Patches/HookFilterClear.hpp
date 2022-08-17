@@ -4,6 +4,7 @@
 namespace BetterSongList::Hooks {
     class HookFilterClear {
         public:
+            /// @brief prio int max value
             static void LevelSearchViewController_ResetCurrentFilterParams_Prefix();
     };
 }

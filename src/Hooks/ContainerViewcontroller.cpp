@@ -10,21 +10,25 @@
 #include "System/Array.hpp"
 #include "System/Action.hpp"
 #include "System/Action_3.hpp"
+#include "System/Action_2.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"
+
+#include "sombrero/shared/linq_functional.hpp"
+using namespace Sombrero::Linq::Functional;
 
 // just this because it's so fukin long
 template<typename T>
 using HashSet = System::Collections::Generic::HashSet_1<T>;
-using AnimationLayouterAction = System::Action_3<float, ::ArrayW<::HMUI::ViewController*>, HashSet<::HMUI::ViewController*>*>;
-custom_types::Helpers::Coroutine RemoveViewControllersCoroutine(HMUI::ContainerViewController* self, ::ArrayW<::HMUI::ViewController*> viewControllersToRemove, ::System::Action* finishedCallback, AnimationLayouterAction* animationLayouter, bool immediately);
+using AnimationLayouterAction_3 = System::Action_3<float, ::ArrayW<::HMUI::ViewController*>, HashSet<::HMUI::ViewController*>*>;
+custom_types::Helpers::Coroutine RemoveViewControllersCoroutine(HMUI::ContainerViewController* self, ::ArrayW<::HMUI::ViewController*> viewControllersToRemove, ::System::Action* finishedCallback, AnimationLayouterAction_3* animationLayouter, bool immediately);
 
 // on PC this is a transpiler on the coroutine enumerator, but we can't do that, so we just make our own coro with the transpiler applied
-// from HookSelectedCollection
+// from UnscufContainerViewControllerRemove
 MAKE_AUTO_HOOK_ORIG_MATCH(ContainerViewController_RemoveViewControllers, &HMUI::ContainerViewController::RemoveViewControllers, void, 
     HMUI::ContainerViewController* self, 
     ArrayW<::HMUI::ViewController*> viewControllers, 
     System::Action* finishedCallback, 
-    AnimationLayouterAction* animationLayouter, 
+    AnimationLayouterAction_3* animationLayouter, 
     bool immediately) {
     self->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(RemoveViewControllersCoroutine(self, viewControllers, finishedCallback, animationLayouter, immediately)));
     // not calling ORIG on purpose!
@@ -37,7 +41,7 @@ custom_types::Helpers::Coroutine RemoveViewControllersCoroutine(HMUI::ContainerV
     for (auto vc : viewControllersToRemove) vc->set_isInTransition(true);
 
     auto eventSystem = UnityEngine::EventSystems::EventSystem::get_current();
-    if (eventSystem) eventSystem->SetSelectedGameObject(nullptr);
+    if (eventSystem && eventSystem->m_CachedPtr.m_value) eventSystem->SetSelectedGameObject(nullptr);
 
     auto viewControllers = self->viewControllers->ToArray();
     // idk if casting an array like that is allowed but it should work like on PC?
@@ -61,8 +65,10 @@ custom_types::Helpers::Coroutine RemoveViewControllersCoroutine(HMUI::ContainerV
     
     // this._viewControllers = this._viewControllers.Except(viewControllersToRemove).ToList<ViewController>();
     // this VV does the same thing except no need to make a new list
-    for (auto vc : viewControllersToRemove) self->viewControllers->Remove(vc);
-
+    for (auto vc : viewControllersToRemove) {
+        self->viewControllers->Remove(vc);
+    }
+    
     self->set_isInTransition(false);
     for (auto vc : viewControllersToRemove) vc->set_isInTransition(false);
 

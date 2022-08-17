@@ -12,6 +12,7 @@
 namespace BetterSongList::Hooks {
     class ExtraLevelParams {
         public:
+            /// @brief no prio
             static void StandardLevelDetailView_RefreshContent_Postfix(
                     GlobalNamespace::StandardLevelDetailView* self, 
                     GlobalNamespace::IBeatmapLevel* level, 

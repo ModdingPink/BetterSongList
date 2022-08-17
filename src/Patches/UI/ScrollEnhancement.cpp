@@ -35,7 +35,7 @@ namespace BetterSongList::Hooks {
     void ScrollEnhancement::LevelCollectionTableView_Init_Prefix(GlobalNamespace::LevelCollectionTableView* self, bool isInitialized, HMUI::TableView* tableView) {
         INFO("ScrollEnhancement::LevelCollectionTableView_Init_Prefix({}, {}, {})", fmt::ptr(self), isInitialized, fmt::ptr(tableView));
         if (!isInitialized) 
-            GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(DoTheFunny(tableView, self->get_transform())));
+            GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(SetupExtraScrollButtons(tableView, self->get_transform())));
 
         UpdateState();
     }
@@ -77,7 +77,7 @@ namespace BetterSongList::Hooks {
         return newBtn;
     }
 
-    custom_types::Helpers::Coroutine ScrollEnhancement::DoTheFunny(HMUI::TableView* table, UnityEngine::Transform* a) {
+    custom_types::Helpers::Coroutine ScrollEnhancement::SetupExtraScrollButtons(HMUI::TableView* table, UnityEngine::Transform* a) {
         co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
 
         auto r = reinterpret_cast<UnityEngine::RectTransform*>(table->get_transform()->get_parent()->get_parent());

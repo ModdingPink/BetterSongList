@@ -25,7 +25,7 @@ namespace BetterSongList::Hooks {
             INFO("It is now '{}'", config.get_lastPack());
         }
 
-        WARNING("AnnotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(): {0}", beatmapLevelCollection ? beatmapLevelCollection->get_collectionName() : "NULL");
+        INFO("AnnotatedBeatmapLevelCollectionsViewController.HandleDidSelectAnnotatedBeatmapLevelCollection(): {0}", beatmapLevelCollection ? beatmapLevelCollection->get_collectionName() : "NULL");
         auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
         auto customLevelspack = songLoader->CustomLevelsPack;
         auto actualPack = customLevelspack ? customLevelspack->CustomLevelsPack : nullptr;

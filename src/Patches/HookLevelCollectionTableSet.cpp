@@ -197,7 +197,7 @@ namespace BetterSongList::Hooks {
         return false;
     }
 
-    void HookLevelCollectionTableSet::Prefix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& previewBeatmapLevels, HashSet<StringW>* favoriteLevelIds, bool& beatmapLevelsAreSorted) {
+    void HookLevelCollectionTableSet::LevelCollectionTableView_SetData_Prefix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& previewBeatmapLevels, HashSet<StringW>* favoriteLevelIds, bool& beatmapLevelsAreSorted) {
         DEBUG("LevelCollectionTableView.SetData() : Prefix");
         if (lastInMapList && previewBeatmapLevels.convert() == lastInMapList.ptr() && lastOutMapList) {
             DEBUG("LevelCollectionTableView.SetData() : Prefix -> levels = lastout because {} == {}", fmt::ptr(previewBeatmapLevels.convert()), fmt::ptr(lastInMapList.ptr()));
@@ -248,7 +248,7 @@ namespace BetterSongList::Hooks {
         FilterWrapper(previewBeatmapLevels);
     }
 
-    void HookLevelCollectionTableSet::PostFix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> previewBeatmapLevels) {
+    void HookLevelCollectionTableSet::LevelCollectionTableView_SetData_PostFix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> previewBeatmapLevels) {
         lastOutMapList.emplace(static_cast<Array<GlobalNamespace::IPreviewBeatmapLevel*>*>(previewBeatmapLevels));
         DEBUG("HookLevelCollectionTableSet::PostFix({}, {})", fmt::ptr(self), previewBeatmapLevels.size());
         if (customLegend.empty()) return;

@@ -1,4 +1,5 @@
 #include "Filters/Models/RequirementsFilter.hpp"
+#include "logging.hpp"
 
 #include "songloader/shared/API.hpp"
 #include "songloader/shared/CustomTypes/CustomLevelInfoSaveData.hpp"
@@ -6,6 +7,7 @@
 
 #include "System/Threading/Tasks/Task_1.hpp"
 #include "Utils/BeatmapUtils.hpp"
+
 
 namespace BetterSongList {
     bool RequirementsFilter::inited = false;
@@ -25,20 +27,51 @@ namespace BetterSongList {
     }
 
     bool RequirementsFilter::GetValueFor(GlobalNamespace::IPreviewBeatmapLevel* level) {
-        auto h = BeatmapUtils::GetHashOfPreview(level);
-        if (h.empty()) return false;
-
         auto customLevel = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(level).value_or(nullptr);
-        if (!customLevel) return false;
+        if (!customLevel) {
+            DEBUG("Level was not custom level!");
+            return false;
+        }
         auto saveData = customLevel->get_standardLevelInfoSaveData();
-        if (!saveData) return false;
+        if (!saveData) {
+            DEBUG("Level had no save data!");
+            return false;
+        }
+
         auto customSaveData = il2cpp_utils::try_cast<CustomJSONData::CustomLevelInfoSaveData>(saveData).value_or(nullptr);
-        if (!customSaveData || !customSaveData->customData.has_value()) return false;
+        if (!customSaveData) {
 
-        auto& customData = customSaveData->customData.value().get();
+            DEBUG("Could not get custom save data!");
+            return false;
+        }
 
-        auto requirementsItr = customData.FindMember(u"_requirements");
-        if (requirementsItr == customData.MemberEnd()) return false;
-        return requirementsItr->value.Size() > 0;
+        if (customSaveData->doc.use_count() <= 0) {
+            DEBUG("Document had use count of 0!");
+            return false;
+        }
+
+        // :smilew:
+        auto& doc = *customSaveData->doc.get();
+        auto difficultyBeatmapSetsitr = doc.FindMember(u"_difficultyBeatmapSets");
+        if (difficultyBeatmapSetsitr != doc.MemberEnd()) {
+            auto setArr = difficultyBeatmapSetsitr->value.GetArray();
+            for (auto& beatmapCharacteristicItr : setArr) {
+                auto difficultyBeatmaps = beatmapCharacteristicItr.FindMember(u"_difficultyBeatmaps");
+                auto beatmaps = difficultyBeatmaps->value.GetArray();
+                for (auto& beatmap : beatmaps) {
+                    auto customDataItr = beatmap.FindMember(u"_customData");
+                    if (customDataItr != beatmap.MemberEnd()) {
+                        auto& customData = customDataItr->value;
+                        auto requirementsItr = customData.FindMember(u"_requirements");
+                        if (requirementsItr != customData.MemberEnd()) {
+                            if (requirementsItr->value.Size() > 0) return true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        DEBUG("Custom Data contained 0 requirements!");
+        return false;
     }
 }

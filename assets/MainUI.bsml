@@ -18,7 +18,7 @@
 	
 	<modal id='incompatibilityModal' clickerino-offerino-closerino='true' move-to-center='true' size-delta-x='70' size-delta-y='45'>
 		<vertical horizontal-fit='Unconstrained' pad='4' pad-top='11'>
-			<horizontal bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='5'>
+			<horizontal bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='-5'>
 				<text text='BetterSongList - UH OH!' align='Center'/>
 			</horizontal>
 			<text text='' align='Center' font-size='3.3' id='failTextLabel' word-wrapping='true'/>

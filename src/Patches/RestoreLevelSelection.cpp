@@ -10,7 +10,8 @@
 #include "GlobalNamespace/IBeatmapLevelCollection.hpp"
 #include "GlobalNamespace/IBeatmapLevel.hpp"
 #include "GlobalNamespace/IDifficultyBeatmap.hpp"
-
+#include "GlobalNamespace/BeatmapDifficulty.hpp"
+#include "GlobalNamespace/PreviewDifficultyBeatmapSet.hpp"
 #include "Utils/PlaylistUtils.hpp"
 
 #include "logging.hpp"
@@ -20,13 +21,13 @@
 
 namespace BetterSongList::Hooks {
     std::string RestoreLevelSelection::restoredPackId;
-    SafePtr<GlobalNamespace::BeatmapLevelPack> RestoreLevelSelection::restoredPack;
+    SafePtr<GlobalNamespace::IBeatmapLevelPack> RestoreLevelSelection::restoredPack;
 
-    void RestoreLevelSelection::LevelSelectionFlowCoordinator_DidActivate_Prefix(GlobalNamespace::LevelSelectionFlowCoordinator::State*& startState) {
+    void RestoreLevelSelection::LevelSelectionFlowCoordinator_DidActivate_Prefix(GlobalNamespace::LevelSelectionFlowCoordinator::State*& startState, bool firstActivation) {
         auto startPack = startState ? startState->beatmapLevelPack : nullptr;
         auto startPackId = startPack ? startPack->get_packID() : nullptr;
         restoredPackId = startPackId ? static_cast<std::string>(startPackId) : "";
-        if (startState) {
+        if (startState || !firstActivation) {
             return;
         }
 
@@ -46,7 +47,7 @@ namespace BetterSongList::Hooks {
 
         startState = GlobalNamespace::LevelSelectionFlowCoordinator::State::New_ctor(
             System::Nullable_1<LevelCategory>(restoreCategory, true),
-            restoredPack ? restoredPack->i_IBeatmapLevelPack() : nullptr,
+            restoredPack.ptr(),
             m,
             nullptr
         );
@@ -67,18 +68,7 @@ namespace BetterSongList::Hooks {
             return;
         }
 
-        auto pack = PlaylistUtils::GetPack(config.get_lastPack());
-        INFO("Got Pack from playlistUtil: {}", fmt::ptr(pack));
-        auto packId = pack ? pack->get_packID() : nullptr;
-
-        restoredPack.emplace(GlobalNamespace::BeatmapLevelPack::New_ctor(
-            packId,
-            nullptr,
-            config.get_lastPack(),
-            nullptr,
-            nullptr,
-            nullptr
-        ));
+        restoredPack.emplace(PlaylistUtils::GetPack(config.get_lastPack()));
     }
 
     void RestoreLevelSelection::LevelFilteringNavigationController_ShowPacksInSecondChildController_Prefix(StringW& levelPackIdToBeSelectedAfterPresent) {

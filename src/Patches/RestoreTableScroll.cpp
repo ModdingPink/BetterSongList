@@ -27,26 +27,26 @@ namespace BetterSongList::Hooks {
         scrollToIndex = 0;
         doResetScrollOnNext = true;
 
-		WARNING("RestoreTableScroll.ResetScroll()");
+		INFO("RestoreTableScroll.ResetScroll()");
     }
 
-    void RestoreTableScroll::Prefix(GlobalNamespace::LevelCollectionTableView* self) {
+    void RestoreTableScroll::LevelCollectionTableView_Init_Prefix(GlobalNamespace::LevelCollectionTableView* self) {
         if (self->isInitialized && self->tableView != nullptr && self->previewBeatmapLevels != nullptr && !doResetScrollOnNext)
             scrollToIndex = self->tableView->GetVisibleCellsIdRange()->get_Item1();
 
         doResetScrollOnNext = false;
-		WARNING("LevelCollectionTableView.Init():Prefix - scrollToIndex: {}", scrollToIndex);
+		INFO("LevelCollectionTableView.Init():Prefix - scrollToIndex: {}", scrollToIndex);
     }
     
-    void DoTheFunnySelect::PostFix(GlobalNamespace::LevelCollectionTableView* self) {
-		WARNING("DoTheFunnySelect -> LevelCollectionTableView.SetData():Postfix scrollToIndex: {}", RestoreTableScroll::scrollToIndex);
+    void RestoreTableScroll::LevelCollectionTableView_SetData_PostFix(GlobalNamespace::LevelCollectionTableView* self) {
+		INFO("DoTheFunnySelect -> LevelCollectionTableView.SetData():Postfix scrollToIndex: {}", RestoreTableScroll::scrollToIndex);
         auto tableView = self->tableView;
         auto previewBeatmapLevels = self->previewBeatmapLevels;
         auto showLevelPackHeader = self->showLevelPackHeader;
 
         if (!RestoreTableScroll::scrollToIndex.has_value() || RestoreTableScroll::scrollToIndex.value() < 0) return;
 
-		WARNING("-> Scrolling to {}", RestoreTableScroll::scrollToIndex);
+		INFO("-> Scrolling to {}", RestoreTableScroll::scrollToIndex);
 
         tableView->ScrollToCellWithIdx(
             RestoreTableScroll::scrollToIndex.value(), 

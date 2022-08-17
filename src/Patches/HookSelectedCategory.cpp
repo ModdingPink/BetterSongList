@@ -23,7 +23,7 @@ namespace BetterSongList::Hooks {
 
         RestoreTableScroll::ResetScroll();
 
-		WARNING("SelectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell():Prefix => ResetScroll()");
+		INFO("SelectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell():Prefix => ResetScroll()");
         auto instance = FilterUI::get_instance();
         instance->UpdateTransformerOptionsAndDropdowns();
     }

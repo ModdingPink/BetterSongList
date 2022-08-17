@@ -6,6 +6,7 @@
 namespace BetterSongList::Hooks {
     class BottomUI {
         public:
+            /// @brief prio int max value
             static void LevelCollectionNavigationController_DidActivate_Prefix(GlobalNamespace::LevelCollectionNavigationController* self, bool firstActivation);
         
         private:
