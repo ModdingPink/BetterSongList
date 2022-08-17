@@ -64,8 +64,8 @@ namespace BetterSongList::Hooks {
             );
 
         auto newBtn = reinterpret_cast<UnityEngine::RectTransform*>(newBtnGo->get_transform());
-        newBtn->set_anchorMin({0.96f, 0.893f - vOffs});
-        newBtn->set_anchorMax({1, 0.953f - vOffs});
+        newBtn->set_anchorMin({0.92f, 0.893f - vOffs});
+        newBtn->set_anchorMax({0.96f, 0.953f - vOffs});
 
         auto i = newBtn->GetComponentInChildren<HMUI::ImageView*>(true);
         BSML::Utilities::SetImage(i, Icon);
@@ -101,6 +101,18 @@ namespace BetterSongList::Hooks {
         r->set_sizeDelta(sizeDelta);
         static ConstString btnPath{"ScrollBar/UpButton"};
         auto button = a->Find(btnPath);
+
+        // move the scroll bar to the right slightly
+        static ConstString scrollBar{"ScrollBar"};
+        auto bar = reinterpret_cast<UnityEngine::RectTransform*>(a->Find(scrollBar));
+        auto min = bar->get_anchorMin();
+        min.x -= 0.04f;
+        bar->set_anchorMin(min);
+        auto max = bar->get_anchorMax();
+        max.x -= 0.04f;
+        bar->set_anchorMax(max);
+
+        
 
         auto btnUpFast = BuildButton(button, MOD_ID "_double_arrow", 0, -90, [table](){Scroll(table, 0.1f, -1);});
         auto btnDownFast = BuildButton(button, MOD_ID "_double_arrow", 0.86f, 90, [table](){Scroll(table, 0.1f, 1);});
