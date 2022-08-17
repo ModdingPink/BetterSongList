@@ -1,9 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-#include <optional>
 #include "beatsaber-hook/shared/utils/typedefs.h"
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
+#include <unordered_map>
+#include <optional>
 #include <future>
 
 namespace BetterSongList {

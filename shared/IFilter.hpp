@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GlobalNamespace/IPreviewBeatmapLevel.hpp"
-#include "System/Threading/Tasks/Task.hpp"
 #include <future>
 
 namespace BetterSongList {

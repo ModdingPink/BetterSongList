@@ -37,18 +37,23 @@
       "id": "custom-types",
       "versionRange": "^0.15.18",
       "additionalData": {
-        "includeQmod": false
+        "includeQmod": false,
+        "private": true
       }
     },
     {
       "id": "bsml",
       "versionRange": "^0.1.5",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "paper",
       "versionRange": "^1.2.8",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "sdc-wrapper",
@@ -59,6 +64,7 @@
       "id": "songloader",
       "versionRange": "^0.10.3",
       "additionalData": {
+        "private": true,
         "extraFiles": [
           "include"
         ],
@@ -73,27 +79,37 @@
     {
       "id": "songdatacore",
       "versionRange": "*",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "sombrero",
       "versionRange": "^0.1.35",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "cpp-semver",
       "versionRange": "^0.1.2",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "questui",
       "versionRange": "^0.16.4",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "playlistcore",
       "versionRange": "^1.0.1",
-      "additionalData": {}
+      "additionalData": {
+        "private": true
+      }
     },
     {
       "id": "conditional-dependencies",
