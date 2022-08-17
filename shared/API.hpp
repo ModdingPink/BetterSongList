@@ -51,7 +51,7 @@ namespace BetterSongList::API {
     static std::optional<bool> RegisterFilter(T filter) { 
         static auto function = CondDeps::Find<bool, ITransformerPlugin*>(BETTERSONGLIST, "RegisterFilter");
         if (function) 
-            return function.value()(sorter);
+            return function.value()(filter);
         return std::nullopt;
     }
 }

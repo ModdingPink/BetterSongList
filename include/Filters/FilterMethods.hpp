@@ -13,12 +13,13 @@ namespace BetterSongList {
         public:
             static const std::map<std::string, IFilter*>& get_methods();
 
+            static bool Register(ITransformerPlugin* filter);
+
             template<Filter T>
             requires(std::is_convertible_v<T, ITransformerPlugin*>)
             static bool RegisterFilter(T filter) { return Register(filter); }
 
         private:
-            static bool Register(ITransformerPlugin* filter);
             static std::map<std::string, IFilter*> methods;
     };
 }
