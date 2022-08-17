@@ -28,7 +28,8 @@ namespace BetterSongList {
 
     static PlayedFilter unplayed(true);
     static PlayedFilter played{};
-    static RequirementsFilter requirements{};
+    static RequirementsFilter requirements(false);
+    static RequirementsFilter noRequirements(true);
 
     const std::map<std::string, IFilter*>& FilterMethods::get_methods() {
         return methods;
@@ -59,6 +60,7 @@ namespace BetterSongList {
 		{"Unplayed", &unplayed},
 		{"Played", &played},
 		{"Requirements", &requirements},
+		{"No Requirements", &noRequirements},
 		{"Unranked", &unranked},
 		{"All", nullptr}
     };

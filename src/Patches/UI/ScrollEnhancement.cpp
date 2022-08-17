@@ -32,6 +32,13 @@ void Scroll(HMUI::TableView* table, float step, int direction) {
 namespace BetterSongList::Hooks {
     std::array<SafePtrUnity<UnityEngine::GameObject>, 4> ScrollEnhancement::buttons;
 
+    void ScrollEnhancement::GameRestart() {
+        for (auto& btn : buttons) {
+            UnityEngine::Object::DestroyImmediate(btn.ptr());
+            btn = nullptr;
+        }
+    }
+
     void ScrollEnhancement::LevelCollectionTableView_Init_Prefix(GlobalNamespace::LevelCollectionTableView* self, bool isInitialized, HMUI::TableView* tableView) {
         INFO("ScrollEnhancement::LevelCollectionTableView_Init_Prefix({}, {}, {})", fmt::ptr(self), isInitialized, fmt::ptr(tableView));
         if (!isInitialized) 
@@ -41,8 +48,8 @@ namespace BetterSongList::Hooks {
     }
 
     void ScrollEnhancement::UpdateState() {
-        for (auto btn : buttons) {
-            if (btn) {
+        for (auto& btn : buttons) {
+            if (btn && btn->m_CachedPtr.m_value) {
                 btn->SetActive(config.get_extendSongScrollbar());
             }
         }
