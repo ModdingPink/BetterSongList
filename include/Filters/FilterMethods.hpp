@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Models/IFilter.hpp"
-#include "../Utils/ITransformerPlugin.hpp"
+#include "IFilter.hpp"
+#include "Utils/ITransformerPlugin.hpp"
 #include <map>
 
 namespace BetterSongList {

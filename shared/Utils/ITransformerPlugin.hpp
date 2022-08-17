@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Sorters/Models/ISorter.hpp"
+#include "ISorter.hpp"
 #include "GlobalNamespace/SelectLevelCategoryViewController.hpp"
 #include "GlobalNamespace/IAnnotatedBeatmapLevelCollection.hpp"
 

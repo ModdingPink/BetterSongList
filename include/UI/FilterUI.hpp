@@ -11,8 +11,8 @@
 #include "HMUI/DropdownWithTableView.hpp"
 #include "TMPro/TextMeshProUGUI.hpp"
 
-#include "Sorters/Models/ISorter.hpp"
-#include "Filters/Models/IFilter.hpp"
+#include "ISorter.hpp"
+#include "IFilter.hpp"
 
 #include <queue>
 

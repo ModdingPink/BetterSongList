@@ -3,6 +3,7 @@
 #include "logging.hpp"
 
 #include "songloader/include/CustomTypes/SongLoader.hpp"
+#include "GlobalNamespace/IBeatmapLevelCollection.hpp"
 
 #include "UI/FilterUI.hpp"
 
@@ -20,7 +21,8 @@ namespace BetterSongList::Hooks {
     void HookSelectedCollection::AnnotatedBeatmapLevelCollectionsViewController_HandleDidSelectAnnotatedBeatmapLevelCollection_Prefix(GlobalNamespace::IAnnotatedBeatmapLevelCollection* beatmapLevelCollection) {
         if (beatmapLevelCollection) {
             INFO("Setting last selected pack");
-            auto name = beatmapLevelCollection->get_collectionName();
+            auto beatmapLevelPack = il2cpp_utils::try_cast<GlobalNamespace::IBeatmapLevelPack>(beatmapLevelCollection);
+            auto name = beatmapLevelPack.has_value() ? beatmapLevelPack.value()->get_packID() : nullptr;
             config.set_lastPack(name ? static_cast<std::string>(name) : "");
             INFO("It is now '{}'", config.get_lastPack());
         }

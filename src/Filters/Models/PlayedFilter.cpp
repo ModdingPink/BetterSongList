@@ -15,8 +15,8 @@ namespace BetterSongList {
     }
 
     std::future<void> PlayedFilter::Prepare() {
-        return std::async(std::launch::async, [this](){
-            QuestUI::MainThreadScheduler::Schedule(LocalScoresUtils::Load);
+        QuestUI::MainThreadScheduler::Schedule(LocalScoresUtils::Load);
+        return std::async(std::launch::deferred, [this](){
             while (!this->get_isReady()) std::this_thread::yield();
         });
     }

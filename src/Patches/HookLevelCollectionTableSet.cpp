@@ -161,7 +161,8 @@ namespace BetterSongList::Hooks {
                 indicator->get_gameObject()->SetActive(true);
             }
 
-            if (doCancelSort.use_count()) {
+            if (doCancelSort.use_count() > 0) {
+                *doCancelSort.get() = true;
                 doCancelSort.reset();
             }
 

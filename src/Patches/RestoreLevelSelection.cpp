@@ -27,7 +27,7 @@ namespace BetterSongList::Hooks {
         auto startPack = startState ? startState->beatmapLevelPack : nullptr;
         auto startPackId = startPack ? startPack->get_packID() : nullptr;
         restoredPackId = startPackId ? static_cast<std::string>(startPackId) : "";
-        if (startState || !firstActivation) {
+        if (startState) {
             return;
         }
 
@@ -56,8 +56,8 @@ namespace BetterSongList::Hooks {
     void RestoreLevelSelection::LoadPackFromCollectionName() {
         INFO("Loading pack from name");
         if (restoredPack) {
-            auto shortPackName = restoredPack->get_shortPackName();
-            if (shortPackName && shortPackName == config.get_lastPack()) {
+            auto packID = restoredPack->get_packID();
+            if (packID && packID == config.get_lastPack()) {
                 return;
             }
         }

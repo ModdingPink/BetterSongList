@@ -7,10 +7,6 @@
 #include <future>
 
 namespace BetterSongList {
-    namespace Hooks {
-        class HookLevelCollectionTableSet;
-    }
-
     class ISorter {
         public:
             /// @brief cast the sorter to a derived type
@@ -32,8 +28,6 @@ namespace BetterSongList {
             constexpr ISorter() {}
             virtual bool get_isReady() const = 0;
             virtual std::future<void> Prepare() = 0;
-        protected:
-            friend class ::BetterSongList::Hooks::HookLevelCollectionTableSet;
     };
 
     class ISorterWithLegend {

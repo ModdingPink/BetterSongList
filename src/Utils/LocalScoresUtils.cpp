@@ -11,6 +11,7 @@
 
 namespace BetterSongList::LocalScoresUtils {
     SafePtrUnity<GlobalNamespace::PlayerDataModel> playerDataModel;
+
     struct PlayedMaps : std::vector<std::string> {
         PlayedMaps(int count) : std::vector<std::string>() { reserve(count); }
         auto find(const std::string& str) { return std::find(begin(), end(), str); }

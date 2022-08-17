@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IFilter.hpp"
-#include "../../Utils/IAvailabilityCheck.hpp"
+#include "Utils/IAvailabilityCheck.hpp"
 #include "sdc-wrapper/shared/BeatStarSong.hpp"
 
 namespace BetterSongList {

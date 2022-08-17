@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Sorters/Models/ISorter.hpp"
-#include "Filters/Models/IFilter.hpp"
+#include "ISorter.hpp"
+#include "IFilter.hpp"
 
 #include "GlobalNamespace/LevelCollectionTableView.hpp"
 #include "System/Collections/Generic/HashSet_1.hpp"

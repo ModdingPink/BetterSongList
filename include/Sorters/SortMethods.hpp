@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Models/ISorter.hpp"
-#include "../Utils/ITransformerPlugin.hpp"
+#include "ISorter.hpp"
+#include "Utils/ITransformerPlugin.hpp"
 #include <map>
 
 namespace BetterSongList {

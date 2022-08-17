@@ -13,7 +13,7 @@ namespace BetterSongList::PlaylistUtils {
     Dictionary<StringW, GlobalNamespace::IBeatmapLevelPack*>* get_builtinPacks();
 
     void Init();
-    GlobalNamespace::IBeatmapLevelPack* GetPack(StringW packName);
+    GlobalNamespace::IBeatmapLevelPack* GetPack(StringW packID);
     bool IsCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection);
     ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> GetLevelsForLevelCollection(GlobalNamespace::IAnnotatedBeatmapLevelCollection* levelCollection);
 }

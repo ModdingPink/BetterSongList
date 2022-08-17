@@ -13,6 +13,7 @@ DECLARE_CLASS_CODEGEN(BetterSongList, Settings, Il2CppObject,
     DECLARE_INSTANCE_METHOD(void, PostParse);
     DECLARE_INSTANCE_METHOD(void, OpenSponsorModal);
     DECLARE_INSTANCE_METHOD(void, Init, UnityEngine::Transform* parent);
+    DECLARE_INSTANCE_FIELD(UnityEngine::Transform*, parent);
     DECLARE_INSTANCE_FIELD(BSML::ModalView*, settingsModal);
     DECLARE_INSTANCE_FIELD(BSML::ModalView*, sponsorModal);
     DECLARE_INSTANCE_FIELD(BSML::Backgroundable*, settingsTitle);

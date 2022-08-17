@@ -101,6 +101,7 @@ namespace BetterSongList {
 		config.set_settingsSeenInVersion(std::string(VERSION));
 		settingsWereOpened = true;
 
+        INFO("Settings opened");
         auto settings = Settings::get_instance();
         settings->Init(root);
         settings->settingsModal->Show();

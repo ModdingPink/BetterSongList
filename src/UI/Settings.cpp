@@ -35,7 +35,8 @@ namespace BetterSongList {
     }
     
     void Settings::Init(UnityEngine::Transform* parent) {
-        if (inited) return;
+        if (inited && this->parent && this->parent->m_CachedPtr.m_value) return;
+        this->parent = parent;
         BSML::parse_and_construct(IncludedAssets::Settings_bsml, parent, this);
     }
 }

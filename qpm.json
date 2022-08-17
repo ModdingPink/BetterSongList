@@ -7,7 +7,8 @@
     "version": "0.1.0",
     "url": "https://github.com/BSMGPink/BetterSongList",
     "additionalData": {
-      "overrideSoName": "libbsl.so"
+      "overrideSoName": "libbsl.so",
+      "headersOnly": true
     }
   },
   "dependencies": [
@@ -41,12 +42,12 @@
     },
     {
       "id": "bsml",
-      "versionRange": "^0.1.0",
+      "versionRange": "^0.1.5",
       "additionalData": {}
     },
     {
       "id": "paper",
-      "versionRange": "^1.2.7",
+      "versionRange": "^1.2.8",
       "additionalData": {}
     },
     {
@@ -87,6 +88,16 @@
     {
       "id": "questui",
       "versionRange": "^0.16.4",
+      "additionalData": {}
+    },
+    {
+      "id": "playlistcore",
+      "versionRange": "^1.0.1",
+      "additionalData": {}
+    },
+    {
+      "id": "conditional-dependencies",
+      "versionRange": "^0.1.0",
       "additionalData": {}
     }
   ],

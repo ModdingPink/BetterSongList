@@ -1,5 +1,6 @@
 #include "Utils/PlaylistUtils.hpp"
 #include "modloader/shared/modloader.hpp"
+#include "logging.hpp"
 
 #include "UnityEngine/Object.hpp"
 #include "GlobalNamespace/CustomBeatmapLevelPack.hpp"
@@ -8,10 +9,13 @@
 #include "GlobalNamespace/BeatmapLevelsModel.hpp"
 
 #include "songloader/include/CustomTypes/SongLoader.hpp"
+#include "songloader/shared/API.hpp"
 #include "songloader/include/Utils/FindComponentsUtils.hpp"
 
+#include "playlistcore/shared/PlaylistCore.hpp"
 namespace BetterSongList::PlaylistUtils {
-    static bool hasPlaylistLib = false;
+    // we link to the playlist lib so it's always available
+    static bool hasPlaylistLib = true;
     bool get_hasPlaylistLib() {
         return hasPlaylistLib;
     }
@@ -25,16 +29,17 @@ namespace BetterSongList::PlaylistUtils {
     }
 
     void Init() {
-        // TODO: check if right name
-        hasPlaylistLib = !Modloader::requireMod("playlistcore");
+        INFO("HAHABALL we don't need to init anything cause playlist mod is required on quest :)");
     }
 
-    GlobalNamespace::IBeatmapLevelPack* GetPack(StringW packName) {
-        if (!packName) return nullptr;
+    GlobalNamespace::IBeatmapLevelPack* GetPack(StringW packID) {
+        if (!packID) return nullptr;
         auto songLoader = RuntimeSongLoader::SongLoader::GetInstance();
-        if (packName == "Custom Levels") {
+        static std::string customLevelPackId = RuntimeSongLoader::API::GetCustomLevelPacksPrefix() + "Custom_Levels";
+        static std::string customWipLevelPackId = RuntimeSongLoader::API::GetCustomLevelPacksPrefix() + "Custom_Levels";
+        if (packID == customLevelPackId) {
             return songLoader->CustomLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
-        } else if (packName == "WIP Levels") {
+        } else if (packID == customWipLevelPackId) {
             return songLoader->CustomWIPLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
         }
 
@@ -45,23 +50,22 @@ namespace BetterSongList::PlaylistUtils {
             builtinPacks = Dictionary<StringW, GlobalNamespace::IBeatmapLevelPack*>::New_ctor();
 
             for (auto p : packs) {
-                builtinPacks->Add(p->get_shortPackName(), p);
+                builtinPacks->Add(p->get_packID(), p);
             }
         }
 
         GlobalNamespace::IBeatmapLevelPack* v;
-        if (get_builtinPacks()->TryGetValue(packName, byref(v))) {
+        if (get_builtinPacks()->TryGetValue(packID, byref(v))) {
             return v;
         } else if (hasPlaylistLib) {
-            /*
-            TODO: Playlist lib tie-in. if playlist stuff is not core symbol lookups?
-            auto playlists = playlistlib.getallplaylists;
-            for (auto p : playlists) {
-                if (p->get_packName() == packName) {
-                    return p;
+            auto pls = PlaylistCore::GetLoadedPlaylists();
+            for (auto pl : pls) {
+                if (pl->playlistCS) {
+                    if (pl->playlistCS->get_packID() == packID) {
+                        return pl->playlistCS->i_IBeatmapLevelPack();
+                    }
                 }
             }
-            */
         }
 
         return nullptr;
