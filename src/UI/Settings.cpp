@@ -16,7 +16,7 @@ namespace BetterSongList {
     }
 
     std::string Settings::get_version() {
-        return "BetterSongList v" VERSION "\nport by RedBrumbler";
+        return "BetterSongList v" VERSION " port by RedBrumbler";
     } 
 
     void Settings::PostParse() {

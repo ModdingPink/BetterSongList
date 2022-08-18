@@ -26,8 +26,11 @@ namespace BetterSongList {
         return false;
     });
 
+    static BasicSongDetailsFilter onBeatsaver([](const SDC_wrapper::BeatStarSong* x) { return true; });
+
     static PlayedFilter unplayed(true);
     static PlayedFilter played{};
+
     static RequirementsFilter requirements(false);
     static RequirementsFilter noRequirements(true);
 

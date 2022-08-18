@@ -37,16 +37,16 @@ namespace BetterSongList::LocalScoresUtils {
         }
 
         auto playerDataModel = get_playerDataModel();
-        auto playerData = playerDataModel ? playerDataModel->get_playerData() : nullptr;
-        ListWrapper<GlobalNamespace::PlayerLevelStatsData*> levelData{playerData ? playerData->get_levelsStatsData() : nullptr};
+        auto playerData = playerDataModel ? playerDataModel->playerData : nullptr;
+        ListWrapper<GlobalNamespace::PlayerLevelStatsData*> levelData{playerData ? playerData->levelsStatsData : nullptr};
         if (!levelData) {
             return false;
         }
 
         // only iterate the new entries
-        for (int i = levelData->get_Count(); i-- > playedMaps.size();) {
+        for (int i = levelData.size(); i-- > playedMaps.size();) {
             auto x = levelData[i];
-            if (x->get_validScore() && x->get_levelID() == levelId) {
+            if (x->validScore && x->levelID == levelId) {
                 playedMaps.push_back(levelId);
                 return true;
             }
@@ -67,23 +67,21 @@ namespace BetterSongList::LocalScoresUtils {
         isLoadingScores = true;
 
         auto playerDataModel = get_playerDataModel();
-        std::thread([playerDataModel = playerDataModel](){
         auto playerData = playerDataModel ? playerDataModel->get_playerData() : nullptr;
-            ListWrapper<GlobalNamespace::PlayerLevelStatsData*> levelData{playerData ? playerData->get_levelsStatsData() : nullptr};
-            if (!levelData) {
-                isLoadingScores = false;
-                return;
-            }
-
-            for (auto x : levelData) {
-                if (!x->get_validScore()) continue;
-                auto levelId = static_cast<std::string>(x->get_levelID());
-                if (playedMaps.find(levelId) == playedMaps.end()) {
-                    playedMaps.emplace_back(levelId);
+        List<GlobalNamespace::PlayerLevelStatsData*>* levelData{playerData ? playerData->get_levelsStatsData() : nullptr};
+        
+        if (levelData) {
+            std::thread([](ListWrapper<GlobalNamespace::PlayerLevelStatsData*> levelData){
+                for (auto x : levelData) {
+                    if (!x->validScore) continue;
+                    auto levelId = static_cast<std::string>(x->levelID);
+                    if (playedMaps.find(levelId) == playedMaps.end()) {
+                        playedMaps.emplace_back(levelId);
+                    }
                 }
-            }
 
-            isLoadingScores = false;
-        }).detach();
+                isLoadingScores = false;
+            }, levelData).detach();
+        }
     }
 }

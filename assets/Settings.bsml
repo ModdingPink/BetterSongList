@@ -1,5 +1,5 @@
 <bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.githubusercontent.com/RedBrumbler/Quest-BSML-Docs/gh-pages/schema.xsd'>
-	<modal id='settingsModal' move-to-center='true' size-delta-x='80' size-delta-y='75'>
+	<modal id='settingsModal' move-to-center='true' size-delta-x='80' size-delta-y='75' click-off-closes="true">
 		<vertical horizontal-fit='Unconstrained' pad='4' pad-top='9'>
 			<horizontal id='settingsTitle' bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='-5'>
 				<text text='BetterSongList - Settings' align='Center'/>
@@ -44,15 +44,15 @@
 				</vertical>
 				<vertical>
 					<horizontal spacing='2'>
-						<text id='versionText' text="" font-size="2" align="Center"/>
-						<clickable-text text='♥ Donate' font-size="4" align="Center" on-click="OpenSponsorModal"/>
+						<text id='versionText' text="" font-size="3" align="Center"/>
+						<!--<clickable-text text='♥ Donate' font-size="4" align="Center" on-click="OpenSponsorModal"/>-->
 					</horizontal>
 				</vertical>
 			</horizontal>
 		</vertical>
 	</modal>
 
-	<modal id='sponsorModal' move-to-center='true' size-delta-x='80' size-delta-y='82'>
+	<modal id='sponsorModal' click-off-closes="true" move-to-center='true' size-delta-x='80' size-delta-y='82'>
 		<vertical horizontal-fit='Unconstrained' pad='2' pad-top='9'>
 			<horizontal bg='panel-top-gradient' ignore-layout='true' anchor-max-x='.97' anchor-min-x='.03' anchor-min-y='1' anchor-pos-y='-5'>
 				<text text='BetterSongList - Sponsors' align='Center'/>
