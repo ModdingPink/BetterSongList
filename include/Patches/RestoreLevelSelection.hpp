@@ -12,6 +12,7 @@ namespace BetterSongList::Hooks {
             static void LevelSelectionFlowCoordinator_DidActivate_Prefix(GlobalNamespace::LevelSelectionFlowCoordinator::State*& startState, bool firstActivation);
             /// @brief prio int minvalue
             static void LevelFilteringNavigationController_ShowPacksInSecondChildController_Prefix(StringW& levelPackIdToBeSelectedAfterPresent);
+            static GlobalNamespace::IBeatmapLevelPack* get_restoredPack();
         private:
             static void LoadPackFromCollectionName();
             static std::string restoredPackId;

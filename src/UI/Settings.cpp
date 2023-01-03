@@ -9,7 +9,7 @@ namespace BetterSongList {
     SafePtr<Settings> Settings::instance;
 
     Settings* Settings::get_instance() {
-        if (!instance) {
+        if (!instance || !instance.ptr()) {
             instance.emplace(Settings::New_ctor());
         }
         return instance.ptr();
@@ -17,7 +17,7 @@ namespace BetterSongList {
 
     std::string Settings::get_version() {
         return "BetterSongList v" VERSION " port by RedBrumbler";
-    } 
+    }
 
     void Settings::PostParse() {
         versionText->set_text(get_version());
@@ -29,11 +29,11 @@ namespace BetterSongList {
         sponsorModal->Show();
         // TODO: sponsor text
     }
-    
+
     void Settings::SettingsClosed() {
         settingsModal->Hide();
     }
-    
+
     void Settings::Init(UnityEngine::Transform* parent) {
         if (inited && this->parent && this->parent->m_CachedPtr.m_value) return;
         this->parent = parent;

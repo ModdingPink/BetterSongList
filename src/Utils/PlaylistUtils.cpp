@@ -43,7 +43,7 @@ namespace BetterSongList::PlaylistUtils {
             return songLoader->CustomWIPLevelsPack->CustomLevelsPack->i_IBeatmapLevelPack();
         }
 
-        if (get_builtinPacks() == nullptr) {
+        if (!get_builtinPacks()) {
             auto levelsModel = RuntimeSongLoader::FindComponentsUtils::GetBeatmapLevelsModel();
             auto collection = levelsModel->get_allLoadedBeatmapLevelWithoutCustomLevelPackCollection();
             auto packs = collection->get_beatmapLevelPacks();
@@ -54,7 +54,7 @@ namespace BetterSongList::PlaylistUtils {
             }
         }
 
-        GlobalNamespace::IBeatmapLevelPack* v;
+        GlobalNamespace::IBeatmapLevelPack* v = nullptr;
         if (get_builtinPacks()->TryGetValue(packID, byref(v))) {
             return v;
         } else if (hasPlaylistLib) {

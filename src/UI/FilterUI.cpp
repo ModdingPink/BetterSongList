@@ -43,7 +43,7 @@ namespace BetterSongList {
         sortOptionsList = List<StringW>::New_ctor();
         filterOptionsList = List<StringW>::New_ctor();
     }
-    
+
     void FilterUI::UpdateDropdowns() {
         DEBUG("FilterUI::UpdateDropdowns");
         if (sortDropDown && sortDropDown->m_CachedPtr.m_value) {
@@ -168,7 +168,7 @@ namespace BetterSongList {
     }
 
     FilterUI* FilterUI::get_instance() {
-        if (!instance) {
+        if (!instance || !instance.ptr()) {
             instance = FilterUI::New_ctor();
         }
         return instance.ptr();
@@ -190,7 +190,7 @@ namespace BetterSongList {
 
         auto instance = get_instance();
         if (unavCheck && !reason.empty()) {
-            instance->ShowErrorASAP(fmt::format("Can't sort by {} - ", selected, reason));    
+            instance->ShowErrorASAP(fmt::format("Can't sort by {} - ", selected, reason));
 			SetSort("", false, false);
             return;
         }

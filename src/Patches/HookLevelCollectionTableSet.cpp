@@ -54,7 +54,7 @@ namespace BetterSongList::Hooks {
     }
 
     void HookLevelCollectionTableSet::Refresh(bool processAsync, bool clearAsyncResult) {
-        if (!lastInMapList) {
+        if (!get_lastInMapList()) {
             return;
         }
 
@@ -83,11 +83,11 @@ namespace BetterSongList::Hooks {
         if (!previewBeatmapLevels) {
             return;
         }
-        
+
         if ((filter && !filter->get_isReady()) && (sorter && !sorter->get_isReady())) return;
 
         DEBUG("FilterWrapper({})", previewBeatmapLevels.size());
-        
+
         using namespace Sombrero::Linq::Functional;
         if (filter && filter->get_isReady()) {
             INFO("Filtering levels");
@@ -109,7 +109,7 @@ namespace BetterSongList::Hooks {
             // this checks if the server is an ISorterCustom with rtti
             if (sorter && sorter->as<ISorterCustom*>()) {
                 castedSorter.customSorter->DoSort(previewBeatmapLevels, config.get_sortAsc());
-            } 
+            }
             // this checks if the server is an ISorterPrimitive with rtti
             else if (sorter && sorter->as<ISorterPrimitive*>()) {
                 // sorting is the same regardless of ascending or descending, since the way we differentiate between ascending and descending is to just use the reverse iterators if ascending
@@ -120,7 +120,7 @@ namespace BetterSongList::Hooks {
 
                 if (config.get_sortAsc()) std::sort(previewBeatmapLevels.rbegin(), previewBeatmapLevels.rend(), sort);
                 else std::sort(previewBeatmapLevels.begin(), previewBeatmapLevels.end(), sort);
-            } 
+            }
             // if it was neither, print the type name
             else if (sorter) {
                 ISorter& s = *sorter;
@@ -138,9 +138,6 @@ namespace BetterSongList::Hooks {
         if (withLegend) {
             INFO("Sorter had legend!");
             customLegend = withLegend->BuildLegend(previewBeatmapLevels);
-            for (auto const& [first, second] : customLegend) {
-                INFO("{} : {}", first, second);
-            }
         } else {
             ERROR("Sorter did not have legend!");
         }
@@ -200,9 +197,9 @@ namespace BetterSongList::Hooks {
 
     void HookLevelCollectionTableSet::LevelCollectionTableView_SetData_Prefix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*>& previewBeatmapLevels, HashSet<StringW>* favoriteLevelIds, bool& beatmapLevelsAreSorted) {
         DEBUG("LevelCollectionTableView.SetData() : Prefix");
-        if (lastInMapList && previewBeatmapLevels.convert() == lastInMapList.ptr() && lastOutMapList) {
-            DEBUG("LevelCollectionTableView.SetData() : Prefix -> levels = lastout because {} == {}", fmt::ptr(previewBeatmapLevels.convert()), fmt::ptr(lastInMapList.ptr()));
-            previewBeatmapLevels = lastOutMapList.ptr();
+        if (get_lastInMapList() && previewBeatmapLevels.convert() == get_lastInMapList().convert() && get_lastOutMapList()) {
+            DEBUG("LevelCollectionTableView.SetData() : Prefix -> levels = lastout because {} == {}", previewBeatmapLevels.convert(), get_lastInMapList().convert());
+            previewBeatmapLevels = get_lastOutMapList();
             return;
         }
 
@@ -216,12 +213,12 @@ namespace BetterSongList::Hooks {
         lastInMapList.emplace(static_cast<Array<GlobalNamespace::IPreviewBeatmapLevel*>*>(previewBeatmapLevels));
         auto isSorted = beatmapLevelsAreSorted;
         recallLast = [self, favoriteLevelIds, isSorted](ArrayW<GlobalNamespace::IPreviewBeatmapLevel *> overrideData){
-            auto data = overrideData ? static_cast<Array<GlobalNamespace::IPreviewBeatmapLevel*>*>(overrideData) : lastInMapList.ptr();
-            INFO("recallLast, Data: {}", fmt::ptr(data));
+            auto data = overrideData ? static_cast<Array<GlobalNamespace::IPreviewBeatmapLevel*>*>(overrideData) : get_lastInMapList();
+            INFO("recallLast, Data: {}", data.convert());
             if (data) {
                 INFO("Setting data with {} levels", data->Length());
             }
-            self->SetData((System::Collections::Generic::IReadOnlyList_1<GlobalNamespace::IPreviewBeatmapLevel*>*)data, favoriteLevelIds, isSorted);
+            self->SetData((System::Collections::Generic::IReadOnlyList_1<GlobalNamespace::IPreviewBeatmapLevel*>*)data.convert(), favoriteLevelIds, isSorted);
         };
 
         if (!sorter || sorter->get_isReady()) {
@@ -239,19 +236,19 @@ namespace BetterSongList::Hooks {
             loadingIndicator->get_gameObject()->SetActive(false);
         }
 
-        if (asyncPreProcessed) {
+        if (asyncPreProcessed && asyncPreProcessed.ptr()) {
             previewBeatmapLevels = asyncPreProcessed.ptr();
 			DEBUG("Used Async-Prefiltered");
             asyncPreProcessed.emplace(nullptr);
             return;
         }
-        
+
         FilterWrapper(previewBeatmapLevels);
     }
 
     void HookLevelCollectionTableSet::LevelCollectionTableView_SetData_PostFix(GlobalNamespace::LevelCollectionTableView* self, ArrayW<GlobalNamespace::IPreviewBeatmapLevel*> previewBeatmapLevels) {
+        DEBUG("HookLevelCollectionTableSet::PostFix({}, {})", fmt::ptr(self), previewBeatmapLevels ? previewBeatmapLevels.size() : 0);
         lastOutMapList.emplace(static_cast<Array<GlobalNamespace::IPreviewBeatmapLevel*>*>(previewBeatmapLevels));
-        DEBUG("HookLevelCollectionTableSet::PostFix({}, {})", fmt::ptr(self), previewBeatmapLevels.size());
         if (customLegend.empty()) return;
         auto alphabetScrollBar = self->alphabetScrollbar;
         auto data = ArrayW<GlobalNamespace::AlphabetScrollInfo::Data*>(il2cpp_array_size_t(customLegend.size()));

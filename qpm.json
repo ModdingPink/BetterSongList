@@ -14,7 +14,7 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "^3.10.0",
+      "versionRange": "^3.14.0",
       "additionalData": {
         "extraFiles": [
           "src/inline-hook"
@@ -23,10 +23,8 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.25.0",
-      "additionalData": {
-        "includeQmod": false
-      }
+      "versionRange": "^0.32.0",
+      "additionalData": {}
     },
     {
       "id": "modloader",
@@ -35,22 +33,21 @@
     },
     {
       "id": "custom-types",
-      "versionRange": "^0.15.18",
+      "versionRange": "^0.15.22",
       "additionalData": {
-        "includeQmod": false,
         "private": true
       }
     },
     {
       "id": "bsml",
-      "versionRange": "^0.1.5",
+      "versionRange": "^0.2.10",
       "additionalData": {
         "private": true
       }
     },
     {
       "id": "paper",
-      "versionRange": "^1.2.8",
+      "versionRange": "^1.2.9",
       "additionalData": {
         "private": true
       }
@@ -62,7 +59,7 @@
     },
     {
       "id": "songloader",
-      "versionRange": "^0.10.3",
+      "versionRange": "^0.10.14",
       "additionalData": {
         "private": true,
         "extraFiles": [
@@ -99,14 +96,14 @@
     },
     {
       "id": "questui",
-      "versionRange": "^0.16.4",
+      "versionRange": "^0.17.10",
       "additionalData": {
         "private": true
       }
     },
     {
       "id": "playlistcore",
-      "versionRange": "^1.0.1",
+      "versionRange": "^1.1.4",
       "additionalData": {
         "private": true
       }

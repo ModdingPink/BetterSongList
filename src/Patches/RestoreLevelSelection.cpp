@@ -23,6 +23,12 @@ namespace BetterSongList::Hooks {
     std::string RestoreLevelSelection::restoredPackId;
     SafePtr<GlobalNamespace::IBeatmapLevelPack> RestoreLevelSelection::restoredPack;
 
+    GlobalNamespace::IBeatmapLevelPack* RestoreLevelSelection::get_restoredPack() {
+        if (!restoredPack) {
+            return nullptr;
+        }
+        return restoredPack.ptr();
+    }
     void RestoreLevelSelection::LevelSelectionFlowCoordinator_DidActivate_Prefix(GlobalNamespace::LevelSelectionFlowCoordinator::State*& startState, bool firstActivation) {
         auto startPack = startState ? startState->beatmapLevelPack : nullptr;
         auto startPackId = startPack ? startPack->get_packID() : nullptr;
@@ -42,12 +48,12 @@ namespace BetterSongList::Hooks {
 
             levels->TryGetValue(restoreLevel, byref(m));
         }
-        
+
         LoadPackFromCollectionName();
 
         startState = GlobalNamespace::LevelSelectionFlowCoordinator::State::New_ctor(
             System::Nullable_1<LevelCategory>(restoreCategory, true),
-            restoredPack.ptr(),
+            get_restoredPack(),
             m,
             nullptr
         );
@@ -55,8 +61,8 @@ namespace BetterSongList::Hooks {
 
     void RestoreLevelSelection::LoadPackFromCollectionName() {
         INFO("Loading pack from name");
-        if (restoredPack) {
-            auto packID = restoredPack->get_packID();
+        if (get_restoredPack()) {
+            auto packID = get_restoredPack()->get_packID();
             if (packID && packID == config.get_lastPack()) {
                 return;
             }
@@ -75,6 +81,6 @@ namespace BetterSongList::Hooks {
         if (levelPackIdToBeSelectedAfterPresent) return;
         LoadPackFromCollectionName();
 
-        levelPackIdToBeSelectedAfterPresent = restoredPack ? restoredPack->get_packID() : nullptr;
+        levelPackIdToBeSelectedAfterPresent = get_restoredPack() ? get_restoredPack()->get_packID() : nullptr;
     }
 }

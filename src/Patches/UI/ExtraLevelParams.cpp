@@ -41,12 +41,40 @@ namespace BetterSongList::Hooks {
     SafePtrUnity<UnityEngine::GameObject> ExtraLevelParams::extraUI;
     SafePtr<Array<TMPro::TextMeshProUGUI*>> ExtraLevelParams::fields;
     SafePtrUnity<HMUI::HoverHintController> ExtraLevelParams::hoverHintController;
-                
-    void ExtraLevelParams::StandardLevelDetailView_RefreshContent_Postfix(GlobalNamespace::StandardLevelDetailView* self, GlobalNamespace::IBeatmapLevel* level, GlobalNamespace::IDifficultyBeatmap* selectedDifficultyBeatmap, GlobalNamespace::LevelParamsPanel* levelParamsPanel) {
+
+    GlobalNamespace::StandardLevelDetailView* ExtraLevelParams::get_lastInstance() {
+        if (!lastInstance) {
+            return nullptr;
+        }
+        return lastInstance.ptr();
+    }
+
+    UnityEngine::GameObject* ExtraLevelParams::get_extraUI() {
         if (!extraUI) {
+            return nullptr;
+        }
+        return extraUI.ptr();
+    }
+
+    ArrayW<TMPro::TextMeshProUGUI*> ExtraLevelParams::get_fields() {
+        if (!fields) {
+            return nullptr;
+        }
+        return fields.ptr();
+    }
+
+    HMUI::HoverHintController* ExtraLevelParams::get_hoverHintController() {
+        if (!hoverHintController) {
+            return nullptr;
+        }
+        return hoverHintController.ptr();
+    }
+
+    void ExtraLevelParams::StandardLevelDetailView_RefreshContent_Postfix(GlobalNamespace::StandardLevelDetailView* self, GlobalNamespace::IBeatmapLevel* level, GlobalNamespace::IDifficultyBeatmap* selectedDifficultyBeatmap, GlobalNamespace::LevelParamsPanel* levelParamsPanel) {
+        if (!get_extraUI() || !get_extraUI()->m_CachedPtr.m_value) {
             extraUI = UnityEngine::Object::Instantiate(levelParamsPanel->get_gameObject(), levelParamsPanel->get_transform()->get_parent());
             UnityEngine::Object::Destroy(extraUI->GetComponent<GlobalNamespace::LevelParamsPanel*>());
-            
+
             auto pos = levelParamsPanel->get_transform()->get_localPosition();
             pos.y += 3.5f;
             levelParamsPanel->get_transform()->set_localPosition(pos);
@@ -78,8 +106,8 @@ namespace BetterSongList::Hooks {
 
         }
 
-        if (fields) {
-            ArrayW<TMPro::TextMeshProUGUI*> fieldsW{fields.ptr()};
+        if (get_fields()) {
+            auto fieldsW = get_fields();
             if (!BetterSongList::SongDetails::get_isAvailable()) {
                 INFO("No song details available");
                 fieldsW[0]->set_text("N/A");
@@ -89,7 +117,7 @@ namespace BetterSongList::Hooks {
                 auto parentSet = selectedDifficultyBeatmap->get_parentDifficultyBeatmapSet();
                 auto characteristic = parentSet ? parentSet->get_beatmapCharacteristic() : nullptr;
                 auto ch = characteristic ? SDC_wrapper::BeatStarCharacteristic::BeatmapCharacteristicToBeatStarCharacteristic(characteristic) : song_data_core::BeatStarCharacteristics::Unknown;
-                
+
                 if (ch != song_data_core::BeatStarCharacteristics::Standard) {
                     INFO("Characteristic was not standard");
                     fieldsW[0]->set_text("-");
@@ -149,7 +177,8 @@ namespace BetterSongList::Hooks {
     }
 
     void ExtraLevelParams::UpdateState() {
-        if (lastInstance && lastInstance->get_isActiveAndEnabled()) lastInstance->RefreshContent();
+        auto inst = get_lastInstance();
+        if (inst && inst->m_CachedPtr.m_value && inst->get_isActiveAndEnabled()) inst->RefreshContent();
     }
 
     void ExtraLevelParams::ModifyValue(TMPro::TextMeshProUGUI* text, std::string_view hoverHint, std::string_view icon) {
@@ -165,32 +194,26 @@ namespace BetterSongList::Hooks {
 
         if (!hhint) return;
 
-        if (!hoverHintController) 
+        if (!get_hoverHintController() || !get_hoverHintController()->m_CachedPtr.m_value)
             hoverHintController = UnityEngine::Object::FindObjectOfType<HMUI::HoverHintController*>();
-        hhint->hoverHintController = hoverHintController.ptr();
+        hhint->hoverHintController = get_hoverHintController();
         hhint->set_text(hoverHint);
     }
 
     custom_types::Helpers::Coroutine ExtraLevelParams::ProcessFields() {
-        if (!fields) {
+        if (!get_fields()) {
             ERROR("Fields were not set, returning");
             co_return;
         }
-        
-        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
-        ArrayW<TMPro::TextMeshProUGUI*> fieldsW{fields.ptr()};
-        DEBUG("Fields length: {}", fieldsW.size());
 
-        DEBUG("fields 0");
+        co_yield reinterpret_cast<System::Collections::IEnumerator*>(UnityEngine::WaitForEndOfFrame::New_ctor());
+        auto fieldsW = get_fields();
+
         ModifyValue(fieldsW[0], "ScoreSaber PP Value", "#DifficultyIcon");
-        DEBUG("fields 1");
 		ModifyValue(fieldsW[1], "ScoreSaber Star Rating", "#FavoritesIcon");
-        DEBUG("fields 2");
 		ModifyValue(fieldsW[2], "NJS (Note Jump Speed)", "#FastNotesIcon");
-        DEBUG("fields 3");
 		ModifyValue(fieldsW[3], "JD (Jump Distance, how close notes spawn)", "#MeasureIcon");
 
-        DEBUG("richText");
         fieldsW[0]->set_richText(true);
         fieldsW[0]->set_characterSpacing(-3.0f);
         fieldsW[3]->set_richText(true);

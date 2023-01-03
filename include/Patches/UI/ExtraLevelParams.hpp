@@ -21,6 +21,11 @@ namespace BetterSongList::Hooks {
                 );
             static void UpdateState();
             static void ModifyValue(TMPro::TextMeshProUGUI* text, std::string_view hoverHint, std::string_view icon);
+            static GlobalNamespace::StandardLevelDetailView* get_lastInstance();
+            static UnityEngine::GameObject* get_extraUI();
+            static ArrayW<TMPro::TextMeshProUGUI*> get_fields();
+            static HMUI::HoverHintController* get_hoverHintController();
+
         private:
             static custom_types::Helpers::Coroutine ProcessFields();
             static SafePtrUnity<GlobalNamespace::StandardLevelDetailView> lastInstance;

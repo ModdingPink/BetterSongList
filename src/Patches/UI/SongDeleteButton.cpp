@@ -21,8 +21,17 @@ namespace BetterSongList::Hooks {
     SafePtr<GlobalNamespace::CustomPreviewBeatmapLevel> SongDeleteButton::lastLevel;
     SafePtrUnity<UnityEngine::UI::Button> SongDeleteButton::deleteButton;
 
+    GlobalNamespace::CustomPreviewBeatmapLevel* SongDeleteButton::get_lastLevel() {
+        if (!lastLevel) return nullptr;
+        return lastLevel.ptr();
+    }
+    UnityEngine::UI::Button* SongDeleteButton::get_deleteButton() {
+        if (!deleteButton) return nullptr;
+        return deleteButton.ptr();
+    }
+
     void SongDeleteButton::StandardLevelDetailView_RefreshContent_Postfix(GlobalNamespace::StandardLevelDetailView* self, UnityEngine::UI::Button* practiceButton, GlobalNamespace::IPreviewBeatmapLevel* level) {
-        if (!deleteButton && practiceButton) {
+        if (!get_deleteButton() && practiceButton) {
             auto newButton = UnityEngine::Object::Instantiate(practiceButton->get_gameObject(), practiceButton->get_transform()->get_parent());
             deleteButton = newButton->GetComponentInChildren<UnityEngine::UI::Button*>();
             auto deleteConfirmHandlerInstance = DeleteConfirmHandler::get_instance();
@@ -52,31 +61,22 @@ namespace BetterSongList::Hooks {
             BSML::parse_and_construct(IncludedAssets::SongDeleteConfirm_bsml, self->get_transform()->get_parent(), deleteConfirmHandlerInstance);
         }
 
-        auto casted_level = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(level);
-        if (casted_level.has_value()) {
-            lastLevel = casted_level.value();
-        }
+        auto casted_level = il2cpp_utils::try_cast<GlobalNamespace::CustomPreviewBeatmapLevel>(level).value_or(nullptr);
+        if (casted_level) lastLevel = casted_level;
 
         UpdateState();
     }
 
     void SongDeleteButton::UpdateState() {
-        if (!deleteButton) return;
+        if (!get_deleteButton() || !get_deleteButton()->m_CachedPtr.m_value) return;
 
         deleteButton->set_interactable(lastLevel && (config.get_allowWipDelete() || !get_isWip()));
     }
 
     bool SongDeleteButton::get_isWip() {
-        if (!lastLevel) return false;
+        if (!get_lastLevel()) return false;
         auto levelId = static_cast<std::u16string_view>(lastLevel->get_levelID());
         return levelId.find(u" WIP") != std::u16string_view::npos;
-    }
-
-    GlobalNamespace::CustomPreviewBeatmapLevel* SongDeleteButton::get_lastLevel() {
-        if (!lastLevel) {
-            return nullptr;
-        }
-        return lastLevel.ptr();
     }
 }
 
@@ -86,7 +86,7 @@ namespace BetterSongList {
     SafePtr<DeleteConfirmHandler> DeleteConfirmHandler::instance;
 
     DeleteConfirmHandler* DeleteConfirmHandler::get_instance() {
-        if (!instance) {
+        if (!instance || !instance.ptr()) {
             instance.emplace(DeleteConfirmHandler::New_ctor());
         }
 
@@ -94,7 +94,8 @@ namespace BetterSongList {
     }
 
     void DeleteConfirmHandler::ConfirmDelete() {
-        deleteModal->Show();
+        if (deleteModal && deleteModal->m_CachedPtr.m_value)
+            deleteModal->Show();
     }
 
     void DeleteConfirmHandler::Confirm() {
@@ -107,6 +108,7 @@ namespace BetterSongList {
             return;
         }
 
-        deleteModal->Hide();
+        if (deleteModal && deleteModal->m_CachedPtr.m_value)
+            deleteModal->Hide();
     }
 }

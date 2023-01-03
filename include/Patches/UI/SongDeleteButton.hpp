@@ -16,6 +16,8 @@ namespace BetterSongList::Hooks {
             static void UpdateState();
             static bool get_isWip();
             static GlobalNamespace::CustomPreviewBeatmapLevel* get_lastLevel();
+            static UnityEngine::UI::Button* get_deleteButton();
+
         private:
             static SafePtr<GlobalNamespace::CustomPreviewBeatmapLevel> lastLevel;
             static SafePtrUnity<UnityEngine::UI::Button> deleteButton;

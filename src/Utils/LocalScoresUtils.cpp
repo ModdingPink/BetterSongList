@@ -21,7 +21,7 @@ namespace BetterSongList::LocalScoresUtils {
     PlayedMaps playedMaps(500);
 
     GlobalNamespace::PlayerDataModel* get_playerDataModel() {
-        if (!playerDataModel) {
+        if (!playerDataModel || !playerDataModel.ptr()) {
             playerDataModel = UnityEngine::Object::FindObjectOfType<GlobalNamespace::PlayerDataModel*>();
         }
         return playerDataModel.ptr();

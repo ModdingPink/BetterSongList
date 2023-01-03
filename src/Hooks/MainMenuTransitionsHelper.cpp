@@ -1,4 +1,5 @@
 #include "hooking.hpp"
+#include "logging.hpp"
 
 #include "GlobalNamespace/MenuTransitionsHelper.hpp"
 #include "Zenject/DiContainer.hpp"

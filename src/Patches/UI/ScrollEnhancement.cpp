@@ -34,14 +34,16 @@ namespace BetterSongList::Hooks {
 
     void ScrollEnhancement::GameRestart() {
         for (auto& btn : buttons) {
-            UnityEngine::Object::DestroyImmediate(btn.ptr());
+            if (btn && btn.ptr() && btn->m_CachedPtr.m_value) {
+                UnityEngine::Object::DestroyImmediate(btn.ptr());
+            }
             btn = nullptr;
         }
     }
 
     void ScrollEnhancement::LevelCollectionTableView_Init_Prefix(GlobalNamespace::LevelCollectionTableView* self, bool isInitialized, HMUI::TableView* tableView) {
         INFO("ScrollEnhancement::LevelCollectionTableView_Init_Prefix({}, {}, {})", fmt::ptr(self), isInitialized, fmt::ptr(tableView));
-        if (!isInitialized) 
+        if (!isInitialized)
             GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(SetupExtraScrollButtons(tableView, self->get_transform())));
 
         UpdateState();
@@ -49,7 +51,7 @@ namespace BetterSongList::Hooks {
 
     void ScrollEnhancement::UpdateState() {
         for (auto& btn : buttons) {
-            if (btn && btn->m_CachedPtr.m_value) {
+            if (btn && btn.ptr() && btn->m_CachedPtr.m_value) {
                 btn->SetActive(config.get_extendSongScrollbar());
             }
         }

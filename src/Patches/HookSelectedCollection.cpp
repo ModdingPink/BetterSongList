@@ -37,7 +37,7 @@ namespace BetterSongList::Hooks {
         if (beatmapLevelCollection && config.get_clearFiltersOnPlaylistSelect() && beatmapLevelCollection != pack) {
             instance->SetSort("", false, false);
             instance->SetFilter("", false, false);
-        } else if (lastSelectedCollection) {
+        } else if (get_lastSelectedCollection()) {
             instance->SetSort(config.get_lastSort(), false, false);
             instance->SetFilter(config.get_lastFilter(), false, false);
         }

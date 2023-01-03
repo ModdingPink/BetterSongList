@@ -37,7 +37,7 @@ namespace BetterSongList::Hooks {
         doResetScrollOnNext = false;
 		INFO("LevelCollectionTableView.Init():Prefix - scrollToIndex: {}", scrollToIndex);
     }
-    
+
     void RestoreTableScroll::LevelCollectionTableView_SetData_PostFix(GlobalNamespace::LevelCollectionTableView* self) {
 		INFO("DoTheFunnySelect -> LevelCollectionTableView.SetData():Postfix scrollToIndex: {}", RestoreTableScroll::scrollToIndex);
         auto tableView = self->tableView;
@@ -49,9 +49,10 @@ namespace BetterSongList::Hooks {
 		INFO("-> Scrolling to {}", RestoreTableScroll::scrollToIndex);
 
         tableView->ScrollToCellWithIdx(
-            RestoreTableScroll::scrollToIndex.value(), 
+            RestoreTableScroll::scrollToIndex.value(),
             HMUI::TableView::ScrollPositionType::Beginning,
             false
         );
+        INFO("Scroll done");
     }
 }

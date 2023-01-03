@@ -17,6 +17,7 @@ MAKE_AUTO_HOOK_FIND_INSTANCE(LevelFilterParams_ctor_args,
     ::System::Collections::Generic::HashSet_1<::StringW>* beatmapLevelIds,
     ::StringW searchText,
     bool filterByOwned,
+    bool filterByNotOwned,
     bool filterByDifficulty,
     ::GlobalNamespace::BeatmapDifficultyMask filteredDifficulty,
     bool filterByCharacteristic,
@@ -27,13 +28,15 @@ MAKE_AUTO_HOOK_FIND_INSTANCE(LevelFilterParams_ctor_args,
     bool filterByMinBpm,
     float filteredMinBpm,
     bool filterByMaxBpm,
-    float filteredMaxBpm) {
+    float filteredMaxBpm){
         LevelFilterParams_ctor_args(
             self,
             filterByLevelIds,
             beatmapLevelIds,
             searchText,
-            filterByOwned || config.get_autoFilterUnowned(), /* <-this is why we have to hook this ctor*/
+            filterByOwned || config.get_autoFilterUnowned(),
+            /* <-this is why we have to hook this ctor*/
+            filterByNotOwned,
             filterByDifficulty,
             filteredDifficulty,
             filterByCharacteristic,
